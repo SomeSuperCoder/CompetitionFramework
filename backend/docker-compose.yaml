@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: competitionsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_numero_dos:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data_numero_dos:

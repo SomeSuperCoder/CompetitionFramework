@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
 )
@@ -44,11 +43,9 @@ func (s *MatchService) Generate(r *http.Request, args *repository.GetActiveCompe
 		fmt.Println(insc2.ID)
 		match, err := s.Repo.InsertMatch(r.Context(), repository.InsertMatchParams{
 			Competition: args.Competition,
-			StartTime:   time.Now(),                    // TODO: move to rounds
-			EndTime:     time.Now().Add(time.Hour * 2), // TODO: fix me
 			User1:       insc1.UserID,
 			User2:       &insc2.UserID,
-			Prev:        nil, // TODO: fix me
+			Next:        nil, // TODO: fix me
 		})
 		if err != nil {
 			return err

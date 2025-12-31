@@ -76,7 +76,7 @@ type Match struct {
 	Winner      *uuid.UUID       `json:"winner"`
 	User1       uuid.UUID        `json:"user1"`
 	User2       *uuid.UUID       `json:"user2"`
-	Prev        *uuid.UUID       `json:"prev"`
+	Next        *uuid.UUID       `json:"next"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 

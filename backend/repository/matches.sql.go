@@ -12,7 +12,7 @@ import (
 )
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, competition, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
+SELECT id, competition, winner, user1, user2, next, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -30,7 +30,7 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 			&i.Winner,
 			&i.User1,
 			&i.User2,
-			&i.Prev,
+			&i.Next,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -48,16 +48,16 @@ INSERT INTO matches (
   competition,
   user1,
   user2,
-  prev -- TODO: replace prev with next
+  next
 ) VALUES ( $1, $2, $3, $4 )
-RETURNING id, competition, winner, user1, user2, prev, created_at
+RETURNING id, competition, winner, user1, user2, next, created_at
 `
 
 type InsertMatchParams struct {
 	Competition uuid.UUID  `json:"competition"`
 	User1       uuid.UUID  `json:"user1"`
 	User2       *uuid.UUID `json:"user2"`
-	Prev        *uuid.UUID `json:"prev"`
+	Next        *uuid.UUID `json:"next"`
 }
 
 func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match, error) {
@@ -65,7 +65,7 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		arg.Competition,
 		arg.User1,
 		arg.User2,
-		arg.Prev,
+		arg.Next,
 	)
 	var i Match
 	err := row.Scan(
@@ -74,7 +74,7 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		&i.Winner,
 		&i.User1,
 		&i.User2,
-		&i.Prev,
+		&i.Next,
 		&i.CreatedAt,
 	)
 	return i, err

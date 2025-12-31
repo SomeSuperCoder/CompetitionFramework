@@ -3,7 +3,7 @@ INSERT INTO matches (
   competition,
   user1,
   user2,
-  prev -- TODO: replace prev with next
+  next
 ) VALUES ( $1, $2, $3, $4 )
 RETURNING *;
 

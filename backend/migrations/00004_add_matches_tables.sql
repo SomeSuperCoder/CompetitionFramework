@@ -7,7 +7,7 @@ CREATE TABLE matches (
   winner UUID REFERENCES users(id),
   user1 UUID NOT NULL REFERENCES users(id),
   user2 UUID REFERENCES users(id) CHECK (user1 != user2), -- can be null
-  prev UUID REFERENCES matches(id) CHECK (prev != id),
+  next UUID REFERENCES matches(id) CHECK (next != id),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

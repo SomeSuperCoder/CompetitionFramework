@@ -37,10 +37,13 @@ func main() {
 	repo := repository.New(conn)
 
 	competitionService := &services.CompetitionService{Repo: repo}
-	err = s.RegisterService(competitionService, "Competition")
+	s.RegisterService(competitionService, "Competition")
 
 	taskService := &services.TaskService{Repo: repo}
-	err = s.RegisterService(taskService, "Task")
+	s.RegisterService(taskService, "Task")
+
+	matchService := &services.MatchService{Repo: repo}
+	s.RegisterService(matchService, "Match")
 
 	http.Handle("/rpc", s)
 

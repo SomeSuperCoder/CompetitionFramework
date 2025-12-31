@@ -26,4 +26,5 @@ CREATE TABLE users (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE users;
+DROP TYPE role;
 -- +goose StatementEnd

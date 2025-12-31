@@ -13,7 +13,7 @@ import (
 )
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, name, competition, start_time, end_time, winner, created_at FROM matches ORDER BY created_at DESC
+SELECT id, name, competition, start_time, end_time, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -32,6 +32,9 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 			&i.StartTime,
 			&i.EndTime,
 			&i.Winner,
+			&i.User1,
+			&i.User2,
+			&i.Prev,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -49,9 +52,12 @@ INSERT INTO matches (
   name,
   competition,
   start_time,
-  end_time
-) VALUES ( $1, $2, $3, $4 )
-RETURNING id, name, competition, start_time, end_time, winner, created_at
+  end_time,
+  user1,
+  user2,
+  prev
+) VALUES ( $1, $2, $3, $4, $5, $6, $7 )
+RETURNING id, name, competition, start_time, end_time, winner, user1, user2, prev, created_at
 `
 
 type InsertMatchParams struct {
@@ -59,6 +65,9 @@ type InsertMatchParams struct {
 	Competition uuid.UUID          `json:"competition"`
 	StartTime   pgtype.Timestamptz `json:"start_time"`
 	EndTime     pgtype.Timestamptz `json:"end_time"`
+	User1       uuid.UUID          `json:"user1"`
+	User2       pgtype.UUID        `json:"user2"`
+	Prev        pgtype.UUID        `json:"prev"`
 }
 
 func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match, error) {
@@ -67,6 +76,9 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		arg.Competition,
 		arg.StartTime,
 		arg.EndTime,
+		arg.User1,
+		arg.User2,
+		arg.Prev,
 	)
 	var i Match
 	err := row.Scan(
@@ -76,6 +88,9 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		&i.StartTime,
 		&i.EndTime,
 		&i.Winner,
+		&i.User1,
+		&i.User2,
+		&i.Prev,
 		&i.CreatedAt,
 	)
 	return i, err

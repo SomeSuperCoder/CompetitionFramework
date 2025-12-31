@@ -3,8 +3,11 @@ INSERT INTO matches (
   name,
   competition,
   start_time,
-  end_time
-) VALUES ( $1, $2, $3, $4 )
+  end_time,
+  user1,
+  user2,
+  prev
+) VALUES ( $1, $2, $3, $4, $5, $6, $7 )
 RETURNING *;
 
 -- name: FindAllMatches :many

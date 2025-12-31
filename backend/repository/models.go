@@ -67,6 +67,9 @@ type Match struct {
 	StartTime   pgtype.Timestamptz `json:"start_time"`
 	EndTime     pgtype.Timestamptz `json:"end_time"`
 	Winner      pgtype.UUID        `json:"winner"`
+	User1       uuid.UUID          `json:"user1"`
+	User2       pgtype.UUID        `json:"user2"`
+	Prev        pgtype.UUID        `json:"prev"`
 	CreatedAt   pgtype.Timestamp   `json:"created_at"`
 }
 
@@ -74,10 +77,7 @@ type Round struct {
 	ID        uuid.UUID        `json:"id"`
 	Name      string           `json:"name"`
 	Match     uuid.UUID        `json:"match"`
-	User1     uuid.UUID        `json:"user1"`
-	User2     pgtype.UUID      `json:"user2"`
 	Winner    pgtype.UUID      `json:"winner"`
-	Prev      pgtype.UUID      `json:"prev"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

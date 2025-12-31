@@ -1,5 +1,5 @@
 meta {
-  name: Find All Matches
+  name: Generate Matches
   type: http
   seq: 1
 }
@@ -13,8 +13,10 @@ post {
 body:json {
   {
       "jsonrpc": "2.0",
-      "method": "Match.FindAll",
-      "params": [],
+      "method": "Match.Generate",
+      "params": [{
+        "competition": "3a16ea00-7b92-40f3-88ff-1df500b2d819"
+      }],
       "id": 1
   }
 }

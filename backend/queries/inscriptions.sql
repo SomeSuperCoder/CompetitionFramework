@@ -6,8 +6,10 @@ INSERT INTO inscriptions (
 RETURNING *;
 
 -- name: GetActiveCompetitionInscriptions :many
-SELECT * FROM inscriptions
-WHERE competition = $1 AND active = True
+SELECT i.*, u.id AS user_id
+FROM inscriptions i
+JOIN users u ON i.participant = u.id
+WHERE i.competition = $1 AND active = True
 ORDER BY points;
 
 -- name: GetUserInscriptions :many

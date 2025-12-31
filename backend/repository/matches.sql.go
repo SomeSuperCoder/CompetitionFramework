@@ -7,13 +7,13 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, name, competition, start_time, end_time, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
+SELECT id, competition, start_time, end_time, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -27,7 +27,6 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 		var i Match
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
 			&i.Competition,
 			&i.StartTime,
 			&i.EndTime,
@@ -49,30 +48,27 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 
 const insertMatch = `-- name: InsertMatch :one
 INSERT INTO matches (
-  name,
   competition,
   start_time,
   end_time,
   user1,
   user2,
   prev
-) VALUES ( $1, $2, $3, $4, $5, $6, $7 )
-RETURNING id, name, competition, start_time, end_time, winner, user1, user2, prev, created_at
+) VALUES ( $1, $2, $3, $4, $5, $6 )
+RETURNING id, competition, start_time, end_time, winner, user1, user2, prev, created_at
 `
 
 type InsertMatchParams struct {
-	Name        string             `json:"name"`
-	Competition uuid.UUID          `json:"competition"`
-	StartTime   pgtype.Timestamptz `json:"start_time"`
-	EndTime     pgtype.Timestamptz `json:"end_time"`
-	User1       uuid.UUID          `json:"user1"`
-	User2       pgtype.UUID        `json:"user2"`
-	Prev        pgtype.UUID        `json:"prev"`
+	Competition uuid.UUID  `json:"competition"`
+	StartTime   time.Time  `json:"start_time"`
+	EndTime     time.Time  `json:"end_time"`
+	User1       uuid.UUID  `json:"user1"`
+	User2       *uuid.UUID `json:"user2"`
+	Prev        *uuid.UUID `json:"prev"`
 }
 
 func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match, error) {
 	row := q.db.QueryRow(ctx, insertMatch,
-		arg.Name,
 		arg.Competition,
 		arg.StartTime,
 		arg.EndTime,
@@ -83,7 +79,6 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 	var i Match
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
 		&i.Competition,
 		&i.StartTime,
 		&i.EndTime,

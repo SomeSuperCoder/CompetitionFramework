@@ -9,11 +9,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getActiveCompetitionInscriptions = `-- name: GetActiveCompetitionInscriptions :many
-SELECT id, competition, participant, points, active, created_at FROM inscriptions
-WHERE competition = $1 AND active = True
+SELECT i.id, i.competition, i.participant, i.points, i.active, i.created_at, u.id AS user_id
+FROM inscriptions i
+JOIN users u ON i.participant = u.id
+WHERE i.competition = $1 AND active = True
 ORDER BY points
 `
 
@@ -21,15 +24,25 @@ type GetActiveCompetitionInscriptionsParams struct {
 	Competition uuid.UUID `json:"competition"`
 }
 
-func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetActiveCompetitionInscriptionsParams) ([]Inscription, error) {
+type GetActiveCompetitionInscriptionsRow struct {
+	ID          uuid.UUID        `json:"id"`
+	Competition uuid.UUID        `json:"competition"`
+	Participant uuid.UUID        `json:"participant"`
+	Points      int32            `json:"points"`
+	Active      bool             `json:"active"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UserID      uuid.UUID        `json:"user_id"`
+}
+
+func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetActiveCompetitionInscriptionsParams) ([]GetActiveCompetitionInscriptionsRow, error) {
 	rows, err := q.db.Query(ctx, getActiveCompetitionInscriptions, arg.Competition)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Inscription{}
+	items := []GetActiveCompetitionInscriptionsRow{}
 	for rows.Next() {
-		var i Inscription
+		var i GetActiveCompetitionInscriptionsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Competition,
@@ -37,6 +50,7 @@ func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetA
 			&i.Points,
 			&i.Active,
 			&i.CreatedAt,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}

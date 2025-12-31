@@ -1,0 +1,25 @@
+meta {
+  name: Find All Tasks
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Task.FindAll",
+      "params": [],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

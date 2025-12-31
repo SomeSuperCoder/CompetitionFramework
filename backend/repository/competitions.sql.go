@@ -41,7 +41,7 @@ RETURNING id, name, created_at
 `
 
 type InsertCompetitionParams struct {
-	Name *string `json:"name"`
+	Name string `json:"name"`
 }
 
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {

@@ -1,7 +1,7 @@
 -- name: InsertCompetition :one
 INSERT INTO competitions (
   name
-) VALUES ( sqlc.narg('name') )
+) VALUES ( $1 )
 RETURNING *;
 
 -- name: FindAllCompetitions :many

@@ -39,6 +39,9 @@ func main() {
 	competitionService := &services.CompetitionService{Repo: repo}
 	err = s.RegisterService(competitionService, "Competition")
 
+	taskService := &services.TaskService{Repo: repo}
+	err = s.RegisterService(taskService, "Task")
+
 	http.Handle("/rpc", s)
 
 	log.Printf("RPC started and is listening on :%v", port)

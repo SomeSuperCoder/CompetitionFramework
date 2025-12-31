@@ -1,0 +1,29 @@
+meta {
+  name: Insert Task
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Task.Insert",
+      "params": [{
+        "name": "A task",
+        "details": "Do this...",
+        "competition": "f2d294d1-c36f-4a78-9b45-df0b4f3807fb"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

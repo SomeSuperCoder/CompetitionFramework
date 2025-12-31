@@ -9,13 +9,11 @@ CREATE TYPE role AS ENUM (
 );
 
 CREATE TABLE users (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR NOT NULL,
   email CITEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   role role NOT NULL DEFAULT 'participant',
- 
-  competition UUID NOT NULL REFERENCES competitions(id),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   -- Basic email regex check

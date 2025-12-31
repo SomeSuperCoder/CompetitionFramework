@@ -60,6 +60,15 @@ type Competition struct {
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
+type Inscription struct {
+	ID          uuid.UUID        `json:"id"`
+	Competition uuid.UUID        `json:"competition"`
+	Participant uuid.UUID        `json:"participant"`
+	Points      int32            `json:"points"`
+	Active      bool             `json:"active"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+}
+
 type Match struct {
 	ID          uuid.UUID          `json:"id"`
 	Name        string             `json:"name"`
@@ -90,11 +99,10 @@ type Task struct {
 }
 
 type User struct {
-	ID          uuid.UUID        `json:"id"`
-	Name        string           `json:"name"`
-	Email       string           `json:"email"`
-	Password    string           `json:"password"`
-	Role        Role             `json:"role"`
-	Competition uuid.UUID        `json:"competition"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	ID        uuid.UUID        `json:"id"`
+	Name      string           `json:"name"`
+	Email     string           `json:"email"`
+	Password  string           `json:"password"`
+	Role      Role             `json:"role"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 }

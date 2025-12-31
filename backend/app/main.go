@@ -45,6 +45,9 @@ func main() {
 	matchService := &services.MatchService{Repo: repo}
 	s.RegisterService(matchService, "Match")
 
+	userService := &services.UserService{Repo: repo}
+	s.RegisterService(userService, "User")
+
 	http.Handle("/rpc", s)
 
 	log.Printf("RPC started and is listening on :%v", port)

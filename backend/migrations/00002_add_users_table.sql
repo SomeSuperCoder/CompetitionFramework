@@ -13,7 +13,7 @@ CREATE TABLE users (
   name VARCHAR NOT NULL,
   email CITEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  role role NOT NULL,
+  role role NOT NULL DEFAULT 'participant',
  
   competition UUID NOT NULL REFERENCES competitions(id),
 

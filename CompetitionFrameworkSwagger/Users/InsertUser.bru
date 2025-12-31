@@ -1,7 +1,7 @@
 meta {
-  name: Insert Task
+  name: InsertUser
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -13,11 +13,11 @@ post {
 body:json {
   {
       "jsonrpc": "2.0",
-      "method": "Task.Insert",
+      "method": "User.Insert",
       "params": [{
-        "name": "A task",
-        "details": "Do this...",
-        "competition": "0b148fd3-89a4-4826-9937-b5241991e91c"
+        "name": "Not a Coder",
+        "email": "asdasd@gmail.com",
+        "password": "Qwerty123"
       }],
       "id": 1
   }

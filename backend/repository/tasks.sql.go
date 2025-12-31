@@ -7,12 +7,10 @@ package repository
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const findAllTasks = `-- name: FindAllTasks :many
-SELECT id, name, details, competition, created_at FROM tasks ORDER BY created_at DESC
+SELECT id, name, details, points, created_at FROM tasks ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
@@ -28,7 +26,7 @@ func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
 			&i.ID,
 			&i.Name,
 			&i.Details,
-			&i.Competition,
+			&i.Points,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -44,26 +42,24 @@ func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
 const insertTask = `-- name: InsertTask :one
 INSERT INTO tasks (
   name,
-  details,
-  competition
-) VALUES ( $1, $2, $3 )
-RETURNING id, name, details, competition, created_at
+  details
+) VALUES ( $1, $2 )
+RETURNING id, name, details, points, created_at
 `
 
 type InsertTaskParams struct {
-	Name        string    `json:"name"`
-	Details     string    `json:"details"`
-	Competition uuid.UUID `json:"competition"`
+	Name    string `json:"name"`
+	Details string `json:"details"`
 }
 
 func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) (Task, error) {
-	row := q.db.QueryRow(ctx, insertTask, arg.Name, arg.Details, arg.Competition)
+	row := q.db.QueryRow(ctx, insertTask, arg.Name, arg.Details)
 	var i Task
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Details,
-		&i.Competition,
+		&i.Points,
 		&i.CreatedAt,
 	)
 	return i, err

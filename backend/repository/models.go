@@ -91,10 +91,17 @@ type Round struct {
 }
 
 type Task struct {
+	ID        uuid.UUID        `json:"id"`
+	Name      string           `json:"name"`
+	Details   string           `json:"details"`
+	Points    int32            `json:"points"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
+type TaskOrder struct {
 	ID          uuid.UUID        `json:"id"`
-	Name        string           `json:"name"`
-	Details     string           `json:"details"`
 	Competition uuid.UUID        `json:"competition"`
+	Task        uuid.UUID        `json:"task"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 

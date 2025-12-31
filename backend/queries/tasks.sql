@@ -1,9 +1,8 @@
 -- name: InsertTask :one
 INSERT INTO tasks (
   name,
-  details,
-  competition
-) VALUES ( $1, $2, $3 )
+  details
+) VALUES ( $1, $2 )
 RETURNING *;
 
 -- name: FindAllTasks :many

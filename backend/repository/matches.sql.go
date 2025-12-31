@@ -7,13 +7,12 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, competition, start_time, end_time, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
+SELECT id, competition, winner, user1, user2, prev, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -28,8 +27,6 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Competition,
-			&i.StartTime,
-			&i.EndTime,
 			&i.Winner,
 			&i.User1,
 			&i.User2,
@@ -49,19 +46,15 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 const insertMatch = `-- name: InsertMatch :one
 INSERT INTO matches (
   competition,
-  start_time,
-  end_time,
   user1,
   user2,
-  prev
-) VALUES ( $1, $2, $3, $4, $5, $6 )
-RETURNING id, competition, start_time, end_time, winner, user1, user2, prev, created_at
+  prev -- TODO: replace prev with next
+) VALUES ( $1, $2, $3, $4 )
+RETURNING id, competition, winner, user1, user2, prev, created_at
 `
 
 type InsertMatchParams struct {
 	Competition uuid.UUID  `json:"competition"`
-	StartTime   time.Time  `json:"start_time"`
-	EndTime     time.Time  `json:"end_time"`
 	User1       uuid.UUID  `json:"user1"`
 	User2       *uuid.UUID `json:"user2"`
 	Prev        *uuid.UUID `json:"prev"`
@@ -70,8 +63,6 @@ type InsertMatchParams struct {
 func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match, error) {
 	row := q.db.QueryRow(ctx, insertMatch,
 		arg.Competition,
-		arg.StartTime,
-		arg.EndTime,
 		arg.User1,
 		arg.User2,
 		arg.Prev,
@@ -80,8 +71,6 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 	err := row.Scan(
 		&i.ID,
 		&i.Competition,
-		&i.StartTime,
-		&i.EndTime,
 		&i.Winner,
 		&i.User1,
 		&i.User2,

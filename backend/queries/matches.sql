@@ -1,12 +1,10 @@
 -- name: InsertMatch :one
 INSERT INTO matches (
   competition,
-  start_time,
-  end_time,
   user1,
   user2,
-  prev
-) VALUES ( $1, $2, $3, $4, $5, $6 )
+  prev -- TODO: replace prev with next
+) VALUES ( $1, $2, $3, $4 )
 RETURNING *;
 
 -- name: FindAllMatches :many

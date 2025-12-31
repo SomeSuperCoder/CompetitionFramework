@@ -73,8 +73,6 @@ type Inscription struct {
 type Match struct {
 	ID          uuid.UUID        `json:"id"`
 	Competition uuid.UUID        `json:"competition"`
-	StartTime   time.Time        `json:"start_time"`
-	EndTime     time.Time        `json:"end_time"`
 	Winner      *uuid.UUID       `json:"winner"`
 	User1       uuid.UUID        `json:"user1"`
 	User2       *uuid.UUID       `json:"user2"`
@@ -84,8 +82,10 @@ type Match struct {
 
 type Round struct {
 	ID        uuid.UUID        `json:"id"`
-	Name      string           `json:"name"`
+	Task      uuid.UUID        `json:"task"`
 	Match     uuid.UUID        `json:"match"`
+	StartTime time.Time        `json:"start_time"`
+	EndTime   time.Time        `json:"end_time"`
 	Winner    *uuid.UUID       `json:"winner"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }

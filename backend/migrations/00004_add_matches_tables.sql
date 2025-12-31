@@ -4,8 +4,6 @@ CREATE TABLE matches (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   competition UUID NOT NULL REFERENCES competitions(id),
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ NOT NULL CHECK (end_time > start_time),
   winner UUID REFERENCES users(id),
   user1 UUID NOT NULL REFERENCES users(id),
   user2 UUID REFERENCES users(id) CHECK (user1 != user2), -- can be null

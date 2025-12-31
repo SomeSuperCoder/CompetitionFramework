@@ -1,0 +1,27 @@
+meta {
+  name: Insert Competition
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Competition.Insert",
+      "params": [{
+        "name": "Some Test Competition"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

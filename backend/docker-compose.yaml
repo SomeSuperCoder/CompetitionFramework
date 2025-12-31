@@ -11,7 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data_numero_dos:/var/lib/postgresql/data
-      - ./db/migrations:/docker-entrypoint-initdb.d
 
 volumes:
   postgres_data_numero_dos:

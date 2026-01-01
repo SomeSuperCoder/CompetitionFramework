@@ -12,3 +12,8 @@ UPDATE competitions
 SET name = $2
 WHERE id = $1
 RETURNING *;
+
+-- name: DeleteCompetition :one
+DELETE FROM competitions
+WHERE id = $1
+RETURNING *;

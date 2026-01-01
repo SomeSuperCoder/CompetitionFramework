@@ -1,0 +1,27 @@
+meta {
+  name: Delete competition
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Competition.Delete",
+      "params": [{
+        "id": "6637f89a-8041-4d40-b7e9-d02ea3cce737"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

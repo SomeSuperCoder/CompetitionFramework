@@ -36,3 +36,12 @@ func (s *CompetitionService) Rename(r *http.Request, args *repository.RenameComp
 	*reply = competition
 	return nil
 }
+
+func (s *CompetitionService) Delete(r *http.Request, args *repository.DeleteCompetitionParams, reply *repository.Competition) error {
+	competiton, err := s.Repo.DeleteCompetition(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = competiton
+	return nil
+}

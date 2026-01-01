@@ -11,6 +11,23 @@ import (
 	"github.com/google/uuid"
 )
 
+const deleteCompetition = `-- name: DeleteCompetition :one
+DELETE FROM competitions
+WHERE id = $1
+RETURNING id, name, created_at
+`
+
+type DeleteCompetitionParams struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (q *Queries) DeleteCompetition(ctx context.Context, arg DeleteCompetitionParams) (Competition, error) {
+	row := q.db.QueryRow(ctx, deleteCompetition, arg.ID)
+	var i Competition
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
+}
+
 const findAllCompetitions = `-- name: FindAllCompetitions :many
 SELECT id, name, created_at FROM competitions ORDER BY created_at DESC
 `

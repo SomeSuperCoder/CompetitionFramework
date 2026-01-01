@@ -13,49 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type MatchStatus string
-
-const (
-	MatchStatusAwaiting  MatchStatus = "awaiting"
-	MatchStatusRunning   MatchStatus = "running"
-	MatchStatusCompleted MatchStatus = "completed"
-)
-
-func (e *MatchStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = MatchStatus(s)
-	case string:
-		*e = MatchStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for MatchStatus: %T", src)
-	}
-	return nil
-}
-
-type NullMatchStatus struct {
-	MatchStatus MatchStatus `json:"match_status"`
-	Valid       bool        `json:"valid"` // Valid is true if MatchStatus is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullMatchStatus) Scan(value interface{}) error {
-	if value == nil {
-		ns.MatchStatus, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.MatchStatus.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullMatchStatus) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.MatchStatus), nil
-}
-
 type Role string
 
 const (
@@ -98,9 +55,53 @@ func (ns NullRole) Value() (driver.Value, error) {
 	return string(ns.Role), nil
 }
 
+type UnitStatus string
+
+const (
+	UnitStatusAwaiting  UnitStatus = "awaiting"
+	UnitStatusRunning   UnitStatus = "running"
+	UnitStatusCompleted UnitStatus = "completed"
+)
+
+func (e *UnitStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UnitStatus(s)
+	case string:
+		*e = UnitStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UnitStatus: %T", src)
+	}
+	return nil
+}
+
+type NullUnitStatus struct {
+	UnitStatus UnitStatus `json:"unit_status"`
+	Valid      bool       `json:"valid"` // Valid is true if UnitStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUnitStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.UnitStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UnitStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUnitStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UnitStatus), nil
+}
+
 type Competition struct {
 	ID        uuid.UUID        `json:"id"`
 	Name      string           `json:"name"`
+	Status    UnitStatus       `json:"status"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
@@ -120,7 +121,7 @@ type Match struct {
 	User1       uuid.UUID        `json:"user1"`
 	User2       *uuid.UUID       `json:"user2"`
 	Next        *uuid.UUID       `json:"next"`
-	Status      MatchStatus      `json:"status"`
+	Status      UnitStatus       `json:"status"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 
@@ -131,6 +132,7 @@ type Round struct {
 	StartTime time.Time        `json:"start_time"`
 	EndTime   time.Time        `json:"end_time"`
 	Winner    *uuid.UUID       `json:"winner"`
+	Status    UnitStatus       `json:"status"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

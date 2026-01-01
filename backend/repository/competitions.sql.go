@@ -14,7 +14,7 @@ import (
 const deleteCompetition = `-- name: DeleteCompetition :one
 DELETE FROM competitions
 WHERE id = $1
-RETURNING id, name, created_at
+RETURNING id, name, status, created_at
 `
 
 type DeleteCompetitionParams struct {
@@ -24,12 +24,17 @@ type DeleteCompetitionParams struct {
 func (q *Queries) DeleteCompetition(ctx context.Context, arg DeleteCompetitionParams) (Competition, error) {
 	row := q.db.QueryRow(ctx, deleteCompetition, arg.ID)
 	var i Competition
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const findAllCompetitions = `-- name: FindAllCompetitions :many
-SELECT id, name, created_at FROM competitions ORDER BY created_at DESC
+SELECT id, name, status, created_at FROM competitions ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllCompetitions(ctx context.Context) ([]Competition, error) {
@@ -41,7 +46,41 @@ func (q *Queries) FindAllCompetitions(ctx context.Context) ([]Competition, error
 	items := []Competition{}
 	for rows.Next() {
 		var i Competition
-		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findAllRunningCompetitions = `-- name: FindAllRunningCompetitions :many
+SELECT id, name, status, created_at FROM competitions WHERE status = 'running' ORDER BY created_at ASC
+`
+
+func (q *Queries) FindAllRunningCompetitions(ctx context.Context) ([]Competition, error) {
+	rows, err := q.db.Query(ctx, findAllRunningCompetitions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Competition{}
+	for rows.Next() {
+		var i Competition
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -56,7 +95,7 @@ const insertCompetition = `-- name: InsertCompetition :one
 INSERT INTO competitions (
   name
 ) VALUES ( $1 )
-RETURNING id, name, created_at
+RETURNING id, name, status, created_at
 `
 
 type InsertCompetitionParams struct {
@@ -66,7 +105,12 @@ type InsertCompetitionParams struct {
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {
 	row := q.db.QueryRow(ctx, insertCompetition, arg.Name)
 	var i Competition
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
@@ -74,7 +118,7 @@ const renameCompetition = `-- name: RenameCompetition :one
 UPDATE competitions
 SET name = $2
 WHERE id = $1
-RETURNING id, name, created_at
+RETURNING id, name, status, created_at
 `
 
 type RenameCompetitionParams struct {
@@ -85,6 +129,11 @@ type RenameCompetitionParams struct {
 func (q *Queries) RenameCompetition(ctx context.Context, arg RenameCompetitionParams) (Competition, error) {
 	row := q.db.QueryRow(ctx, renameCompetition, arg.ID, arg.Name)
 	var i Competition
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Status,
+		&i.CreatedAt,
+	)
 	return i, err
 }

@@ -7,6 +7,9 @@ RETURNING *;
 -- name: FindAllCompetitions :many
 SELECT * FROM competitions ORDER BY created_at DESC;
 
+-- name: FindAllRunningCompetitions :many
+SELECT * FROM competitions WHERE status = 'running' ORDER BY created_at ASC;
+
 -- name: RenameCompetition :one
 UPDATE competitions
 SET name = $2

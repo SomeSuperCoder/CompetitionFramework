@@ -8,6 +8,7 @@ CREATE TABLE rounds (
   start_time TIMESTAMPTZ NOT NULL,
   end_time TIMESTAMPTZ NOT NULL CHECK (end_time > start_time),
   winner UUID REFERENCES users(id),
+  status unit_status NOT NULL DEFAULT 'awaiting',
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

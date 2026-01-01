@@ -7,7 +7,32 @@ package repository
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const deleteTask = `-- name: DeleteTask :one
+DELETE FROM tasks
+WHERE id = $1
+RETURNING id, name, details, points, created_at
+`
+
+type DeleteTaskParams struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) (Task, error) {
+	row := q.db.QueryRow(ctx, deleteTask, arg.ID)
+	var i Task
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Details,
+		&i.Points,
+		&i.CreatedAt,
+	)
+	return i, err
+}
 
 const findAllTasks = `-- name: FindAllTasks :many
 SELECT id, name, details, points, created_at FROM tasks ORDER BY created_at DESC
@@ -42,18 +67,55 @@ func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
 const insertTask = `-- name: InsertTask :one
 INSERT INTO tasks (
   name,
-  details
-) VALUES ( $1, $2 )
+  details,
+  points
+) VALUES ( $1, $2, $3 )
 RETURNING id, name, details, points, created_at
 `
 
 type InsertTaskParams struct {
 	Name    string `json:"name"`
 	Details string `json:"details"`
+	Points  int32  `json:"points"`
 }
 
 func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) (Task, error) {
-	row := q.db.QueryRow(ctx, insertTask, arg.Name, arg.Details)
+	row := q.db.QueryRow(ctx, insertTask, arg.Name, arg.Details, arg.Points)
+	var i Task
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Details,
+		&i.Points,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateTask = `-- name: UpdateTask :one
+UPDATE tasks
+SET
+    name = COALESCE($2, name),
+    details = COALESCE($3, details),
+    points = COALESCE($4, points)
+WHERE id = $1
+RETURNING id, name, details, points, created_at
+`
+
+type UpdateTaskParams struct {
+	ID      uuid.UUID `json:"id"`
+	Name    *string   `json:"name"`
+	Details *string   `json:"details"`
+	Points  *int32    `json:"points"`
+}
+
+func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {
+	row := q.db.QueryRow(ctx, updateTask,
+		arg.ID,
+		arg.Name,
+		arg.Details,
+		arg.Points,
+	)
 	var i Task
 	err := row.Scan(
 		&i.ID,

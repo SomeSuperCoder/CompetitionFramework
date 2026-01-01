@@ -27,3 +27,21 @@ func (s *TaskService) FindAll(r *http.Request, args *any, reply *[]repository.Ta
 	*reply = tasks
 	return nil
 }
+
+func (s *TaskService) Update(r *http.Request, args *repository.UpdateTaskParams, reply *repository.Task) error {
+	task, err := s.Repo.UpdateTask(r.Context(), *args)
+	if err != nil {
+		return nil
+	}
+	*reply = task
+	return nil
+}
+
+func (s *TaskService) Delete(r *http.Request, args *repository.DeleteTaskParams, reply *repository.Task) error {
+	task, err := s.Repo.DeleteTask(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = task
+	return nil
+}

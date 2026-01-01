@@ -1,7 +1,7 @@
 meta {
-  name: Insert Task
+  name: Delete Task
   type: http
-  seq: 2
+  seq: 4
 }
 
 post {
@@ -13,11 +13,9 @@ post {
 body:json {
   {
       "jsonrpc": "2.0",
-      "method": "Task.Insert",
+      "method": "Task.Delete",
       "params": [{
-        "name": "A task",
-        "details": "Do this...",
-        "points": 1
+        "id": "db733eb2-5cd4-4788-8377-037fc8ec4d09"
       }],
       "id": 1
   }

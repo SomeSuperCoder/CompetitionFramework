@@ -45,3 +45,31 @@ func (s *TaskService) Delete(r *http.Request, args *repository.DeleteTaskParams,
 	*reply = task
 	return nil
 }
+
+// Task orders
+func (s *TaskService) Order(r *http.Request, args *repository.InsertTaskOrderParams, reply *repository.TaskOrder) error {
+	taskOrder, err := s.Repo.InsertTaskOrder(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = taskOrder
+	return nil
+}
+
+func (s *TaskService) DeleteOrder(r *http.Request, args *repository.DeleteTaskOrderParams, reply *repository.TaskOrder) error {
+	taskOrder, err := s.Repo.DeleteTaskOrder(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = taskOrder
+	return nil
+}
+
+func (s *TaskService) GetForCompetition(r *http.Request, args *repository.GetTasksForCompetitionParams, reply *[]repository.Task) error {
+	tasks, err := s.Repo.GetTasksForCompetition(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = tasks
+	return nil
+}

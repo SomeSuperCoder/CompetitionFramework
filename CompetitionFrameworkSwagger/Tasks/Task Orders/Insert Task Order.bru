@@ -1,0 +1,28 @@
+meta {
+  name: Insert Task Order
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Task.Order",
+      "params": [{
+        "competition": "2b13612a-d1f0-4396-aff8-2cf12c27ec65",
+        "task": "80c61f48-7940-4564-a949-50c74bba215e"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

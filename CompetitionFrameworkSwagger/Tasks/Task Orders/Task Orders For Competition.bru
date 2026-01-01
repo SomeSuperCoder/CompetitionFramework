@@ -1,0 +1,27 @@
+meta {
+  name: Task Orders For Competition
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Task.GetForCompetition",
+      "params": [{
+        "competition": "2b13612a-d1f0-4396-aff8-2cf12c27ec65"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

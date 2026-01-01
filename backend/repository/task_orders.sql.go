@@ -11,29 +11,54 @@ import (
 	"github.com/google/uuid"
 )
 
+const deleteTaskOrder = `-- name: DeleteTaskOrder :one
+DELETE FROM task_orders
+WHERE task = $1 AND competition = $2
+RETURNING id, competition, task, created_at
+`
+
+type DeleteTaskOrderParams struct {
+	Task        uuid.UUID `json:"task"`
+	Competition uuid.UUID `json:"competition"`
+}
+
+func (q *Queries) DeleteTaskOrder(ctx context.Context, arg DeleteTaskOrderParams) (TaskOrder, error) {
+	row := q.db.QueryRow(ctx, deleteTaskOrder, arg.Task, arg.Competition)
+	var i TaskOrder
+	err := row.Scan(
+		&i.ID,
+		&i.Competition,
+		&i.Task,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getTasksForCompetition = `-- name: GetTasksForCompetition :many
-SELECT id, competition, task, created_at FROM task_orders
+SELECT tasks.id, tasks.name, tasks.details, tasks.points, tasks.created_at FROM task_orders
+JOIN tasks ON task_orders.task = tasks.id
 WHERE competition = $1
-ORDER BY created_at DESC
+ORDER BY task_orders.created_at DESC
 `
 
 type GetTasksForCompetitionParams struct {
 	Competition uuid.UUID `json:"competition"`
 }
 
-func (q *Queries) GetTasksForCompetition(ctx context.Context, arg GetTasksForCompetitionParams) ([]TaskOrder, error) {
+func (q *Queries) GetTasksForCompetition(ctx context.Context, arg GetTasksForCompetitionParams) ([]Task, error) {
 	rows, err := q.db.Query(ctx, getTasksForCompetition, arg.Competition)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []TaskOrder{}
+	items := []Task{}
 	for rows.Next() {
-		var i TaskOrder
+		var i Task
 		if err := rows.Scan(
 			&i.ID,
-			&i.Competition,
-			&i.Task,
+			&i.Name,
+			&i.Details,
+			&i.Points,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

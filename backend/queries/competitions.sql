@@ -6,3 +6,9 @@ RETURNING *;
 
 -- name: FindAllCompetitions :many
 SELECT * FROM competitions ORDER BY created_at DESC;
+
+-- name: RenameCompetition :one
+UPDATE competitions
+SET name = $2
+WHERE id = $1
+RETURNING *;

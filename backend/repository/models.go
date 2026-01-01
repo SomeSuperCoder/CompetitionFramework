@@ -13,6 +13,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type MatchStatus string
+
+const (
+	MatchStatusAwaiting  MatchStatus = "awaiting"
+	MatchStatusRunning   MatchStatus = "running"
+	MatchStatusCompleted MatchStatus = "completed"
+)
+
+func (e *MatchStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MatchStatus(s)
+	case string:
+		*e = MatchStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MatchStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMatchStatus struct {
+	MatchStatus MatchStatus `json:"match_status"`
+	Valid       bool        `json:"valid"` // Valid is true if MatchStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMatchStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MatchStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MatchStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMatchStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MatchStatus), nil
+}
+
 type Role string
 
 const (
@@ -77,6 +120,7 @@ type Match struct {
 	User1       uuid.UUID        `json:"user1"`
 	User2       *uuid.UUID       `json:"user2"`
 	Next        *uuid.UUID       `json:"next"`
+	Status      MatchStatus      `json:"status"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 

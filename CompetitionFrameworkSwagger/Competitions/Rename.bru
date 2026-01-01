@@ -1,0 +1,28 @@
+meta {
+  name: Rename
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8899/rpc
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "jsonrpc": "2.0",
+      "method": "Competition.Rename",
+      "params": [{
+        "id": "6637f89a-8041-4d40-b7e9-d02ea3cce737",
+        "name": "This will be the new name"
+      }],
+      "id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

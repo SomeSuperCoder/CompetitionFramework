@@ -12,7 +12,7 @@ import (
 )
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, competition, winner, user1, user2, next, created_at FROM matches ORDER BY created_at DESC
+SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -31,6 +31,7 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 			&i.User1,
 			&i.User2,
 			&i.Next,
+			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -50,7 +51,7 @@ INSERT INTO matches (
   user2,
   next
 ) VALUES ( $1, $2, $3, $4 )
-RETURNING id, competition, winner, user1, user2, next, created_at
+RETURNING id, competition, winner, user1, user2, next, status, created_at
 `
 
 type InsertMatchParams struct {
@@ -75,6 +76,7 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		&i.User1,
 		&i.User2,
 		&i.Next,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err

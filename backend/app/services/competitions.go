@@ -27,3 +27,12 @@ func (s *CompetitionService) FindAll(r *http.Request, args *any, reply *[]reposi
 	*reply = competitions
 	return nil
 }
+
+func (s *CompetitionService) Rename(r *http.Request, args *repository.RenameCompetitionParams, reply *repository.Competition) error {
+	competition, err := s.Repo.RenameCompetition(r.Context(), *args)
+	if err != nil {
+		return err
+	}
+	*reply = competition
+	return nil
+}

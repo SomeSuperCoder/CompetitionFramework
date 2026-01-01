@@ -7,6 +7,8 @@ package repository
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const findAllCompetitions = `-- name: FindAllCompetitions :many
@@ -46,6 +48,25 @@ type InsertCompetitionParams struct {
 
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {
 	row := q.db.QueryRow(ctx, insertCompetition, arg.Name)
+	var i Competition
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
+}
+
+const renameCompetition = `-- name: RenameCompetition :one
+UPDATE competitions
+SET name = $2
+WHERE id = $1
+RETURNING id, name, created_at
+`
+
+type RenameCompetitionParams struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+func (q *Queries) RenameCompetition(ctx context.Context, arg RenameCompetitionParams) (Competition, error) {
+	row := q.db.QueryRow(ctx, renameCompetition, arg.ID, arg.Name)
 	var i Competition
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
 	return i, err

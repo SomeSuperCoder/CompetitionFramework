@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -19,14 +20,14 @@ INSERT INTO rounds (
   end_time
 ) VALUES (
   $1, $2, $3, $4
-) RETURNING id, task, match, start_time, end_time, winner, created_at
+) RETURNING id, task, match, start_time, end_time, winner, status, created_at
 `
 
 type InsertRoundParams struct {
-	Task      uuid.UUID   `json:"task"`
-	Match     uuid.UUID   `json:"match"`
-	StartTime interface{} `json:"start_time"`
-	EndTime   interface{} `json:"end_time"`
+	Task      uuid.UUID `json:"task"`
+	Match     uuid.UUID `json:"match"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
 }
 
 func (q *Queries) InsertRound(ctx context.Context, arg InsertRoundParams) (Round, error) {
@@ -44,6 +45,7 @@ func (q *Queries) InsertRound(ctx context.Context, arg InsertRoundParams) (Round
 		&i.StartTime,
 		&i.EndTime,
 		&i.Winner,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err

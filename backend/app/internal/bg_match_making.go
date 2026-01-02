@@ -33,15 +33,14 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 
 	// TODO: Check the start channel
 
-	// Check for currently running competitions
+	// Get all currently running competitions
 	competitions, err = repo.FindAllRunningCompetitions(ctx)
 	for _, competition := range competitions {
 		matches, err := repo.FindAllRunningMatchesInCompetition(ctx, repository.FindAllRunningMatchesInCompetitionParams{
 			Competition: competition.ID,
 		})
 		if err != nil {
-			log.Fatalln(fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err))
-			continue
+			return fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err)
 		}
 
 		// Check if all matches are finished
@@ -53,7 +52,10 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 		}
 		matchAmount := len(matches)
 		if finishedCount == matchAmount {
-			// TODO: Generate a new match set
+			_, err := GenerateMatchesFromFinishedOnes(ctx, repo, matches)
+			if err != nil {
+				return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
+			}
 
 			// End the competition if there is only one match left
 			if matchAmount == 1 {
@@ -100,19 +102,16 @@ func GenerateInitialMatches(ctx context.Context, repo *repository.Queries, compe
 	}
 
 	lenInscriptions := len(inscriptions)
-	fmt.Printf("len(inscriptions) = %v\n", lenInscriptions)
+	log.Printf("len(inscriptions) = %v", lenInscriptions)
 	if !IsAnAccpetablePowerOfTwo(lenInscriptions) {
 		return nil, fmt.Errorf("The number of active participants (%v) is not a power of 2", lenInscriptions)
 	}
 
 	step := 2
 	for i := 0; i < lenInscriptions; i += step {
-		fmt.Println("we are here")
 		insc1 := inscriptions[i]
 		insc2 := inscriptions[i+1]
 
-		fmt.Println(insc1.ID)
-		fmt.Println(insc2.ID)
 		match, err := repo.InsertMatch(ctx, repository.InsertMatchParams{
 			Competition: competition,
 			User1:       insc1.UserID,
@@ -126,4 +125,44 @@ func GenerateInitialMatches(ctx context.Context, repo *repository.Queries, compe
 	}
 
 	return matches, nil
+}
+
+func GenerateMatchesFromFinishedOnes(ctx context.Context, repo *repository.Queries, matches []repository.Match) ([]repository.Match, error) {
+	newMatches := []repository.Match{}
+
+	lenMatches := len(matches)
+	log.Printf("len(matches) = %v", lenMatches)
+
+	step := 2
+	for i := 0; i < lenMatches; i += step {
+		match1 := matches[i]
+		match2 := matches[i+2]
+
+		match, err := repo.InsertMatch(ctx, repository.InsertMatchParams{
+			Competition: match1.Competition,
+			User1:       *match1.Winner,
+			User2:       match2.Winner,
+			Next:        nil,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		// Update the next field of the previous matches
+		newMatches = append(newMatches, match)
+		for _, toUpdate := range []repository.Match{
+			match1, match2,
+		} {
+
+			_, err := repo.SetNextForMatch(ctx, repository.SetNextForMatchParams{
+				ID:   toUpdate.ID,
+				Next: &match.ID,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("Failed to update the next field of match %v due to: %w", toUpdate.ID, err)
+			}
+		}
+	}
+
+	return newMatches, nil
 }

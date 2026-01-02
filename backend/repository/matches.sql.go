@@ -118,3 +118,31 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 	)
 	return i, err
 }
+
+const setNextForMatch = `-- name: SetNextForMatch :one
+UPDATE matches
+SET next = $2
+WHERE id = $1
+RETURNING id, competition, winner, user1, user2, next, status, created_at
+`
+
+type SetNextForMatchParams struct {
+	ID   uuid.UUID  `json:"id"`
+	Next *uuid.UUID `json:"next"`
+}
+
+func (q *Queries) SetNextForMatch(ctx context.Context, arg SetNextForMatchParams) (Match, error) {
+	row := q.db.QueryRow(ctx, setNextForMatch, arg.ID, arg.Next)
+	var i Match
+	err := row.Scan(
+		&i.ID,
+		&i.Competition,
+		&i.Winner,
+		&i.User1,
+		&i.User2,
+		&i.Next,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}

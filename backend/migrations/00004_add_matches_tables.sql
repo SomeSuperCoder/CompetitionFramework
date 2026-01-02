@@ -8,7 +8,7 @@ CREATE TABLE matches (
   user1 UUID NOT NULL REFERENCES users(id),
   user2 UUID REFERENCES users(id) CHECK (user1 != user2), -- can be null
   next UUID REFERENCES matches(id) CHECK (next != id),
-  status unit_status NOT NULL DEFAULT 'awaiting',
+  status unit_status NOT NULL DEFAULT 'running',
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

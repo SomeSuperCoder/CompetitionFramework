@@ -12,7 +12,7 @@ CREATE TABLE competitions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name VARCHAR NOT NULL CHECK (name != ''),
   status unit_status NOT NULL DEFAULT 'awaiting',
-  start_time TIMESTAMPZ NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

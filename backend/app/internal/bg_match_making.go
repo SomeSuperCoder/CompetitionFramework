@@ -52,11 +52,6 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 		}
 		matchAmount := len(matches)
 		if finishedCount == matchAmount {
-			_, err := GenerateMatchesFromFinishedOnes(ctx, repo, matches)
-			if err != nil {
-				return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
-			}
-
 			// End the competition if there is only one match left
 			if matchAmount == 1 {
 				_, err := repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
@@ -66,6 +61,13 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 				if err != nil {
 					return fmt.Errorf("Failed to finish competition %v due to: %w", competition.Name, err)
 				}
+			} else {
+				// Otherwise generate a new match set
+				_, err := GenerateMatchesFromFinishedOnes(ctx, repo, matches)
+				if err != nil {
+					return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
+				}
+
 			}
 		}
 	}

@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -130,17 +131,19 @@ func (q *Queries) FindAllRunningCompetitions(ctx context.Context) ([]Competition
 
 const insertCompetition = `-- name: InsertCompetition :one
 INSERT INTO competitions (
-  name
-) VALUES ( $1 )
+  name,
+  start_time
+) VALUES ( $1, $2 )
 RETURNING id, name, status, start_time, created_at
 `
 
 type InsertCompetitionParams struct {
-	Name string `json:"name"`
+	Name      string    `json:"name"`
+	StartTime time.Time `json:"start_time"`
 }
 
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {
-	row := q.db.QueryRow(ctx, insertCompetition, arg.Name)
+	row := q.db.QueryRow(ctx, insertCompetition, arg.Name, arg.StartTime)
 	var i Competition
 	err := row.Scan(
 		&i.ID,

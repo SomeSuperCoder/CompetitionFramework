@@ -1,7 +1,8 @@
 -- name: InsertCompetition :one
 INSERT INTO competitions (
-  name
-) VALUES ( $1 )
+  name,
+  start_time
+) VALUES ( $1, $2 )
 RETURNING *;
 
 -- name: FindAllCompetitions :many

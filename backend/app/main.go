@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/SomeSuperCoder/CompetitionFramework/backend/app/internal"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/app/services"
+	"github.com/SomeSuperCoder/CompetitionFramework/backend/internal/crons"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
@@ -51,8 +51,11 @@ func main() {
 	userService := &services.UserService{Repo: repo}
 	s.RegisterService(userService, "User")
 
+	inscriptionService := &services.InscriptionService{Repo: repo}
+	s.RegisterService(inscriptionService, "Inscription")
+
 	// Background Match making
-	go internal.BackgroundMatchMaking(ctx, repo)
+	go crons.BackgroundMatchMaking(ctx, repo)
 
 	// Start the http server
 	http.Handle("/rpc", s)

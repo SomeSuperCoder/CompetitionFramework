@@ -5,10 +5,9 @@ CREATE TABLE rounds (
 
   task UUID NOT NULL REFERENCES tasks(id),
   match UUID NOT NULL REFERENCES matches(id),
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ NOT NULL CHECK (end_time > start_time),
-  winner UUID REFERENCES users(id),
-  status unit_status NOT NULL DEFAULT 'awaiting',
+  start_time TIMESTAMPZ NOT NULL,
+  end_time TIMESTAMPZ NOT NULL CHECK(end_time > start_time),
+  winner UUID REFERENCES users(id) CHECK (winner IN (NULL, user1, user2)),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,4 +16,4 @@ CREATE TABLE rounds (
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE rounds;
--- +goose StatementEnd
+-- +goose etatementEne

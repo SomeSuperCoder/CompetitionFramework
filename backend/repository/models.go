@@ -7,7 +7,6 @@ package repository
 import (
 	"database/sql/driver"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -129,10 +128,9 @@ type Round struct {
 	ID        uuid.UUID        `json:"id"`
 	Task      uuid.UUID        `json:"task"`
 	Match     uuid.UUID        `json:"match"`
-	StartTime time.Time        `json:"start_time"`
-	EndTime   time.Time        `json:"end_time"`
+	StartTime interface{}      `json:"start_time"`
+	EndTime   interface{}      `json:"end_time"`
 	Winner    *uuid.UUID       `json:"winner"`
-	Status    UnitStatus       `json:"status"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

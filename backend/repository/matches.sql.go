@@ -44,22 +44,30 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 	return items, nil
 }
 
-const findAllRunningMatches = `-- name: FindAllRunningMatches :many
-SELECT id, name, status, created_at FROM competitions WHERE status = 'running' ORDER BY created_at ASC
+const findAllRunningMatchesInCompetition = `-- name: FindAllRunningMatchesInCompetition :many
+SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches WHERE status = 'running' AND competition = $1 ORDER BY created_at ASC
 `
 
-func (q *Queries) FindAllRunningMatches(ctx context.Context) ([]Competition, error) {
-	rows, err := q.db.Query(ctx, findAllRunningMatches)
+type FindAllRunningMatchesInCompetitionParams struct {
+	Competition uuid.UUID `json:"competition"`
+}
+
+func (q *Queries) FindAllRunningMatchesInCompetition(ctx context.Context, arg FindAllRunningMatchesInCompetitionParams) ([]Match, error) {
+	rows, err := q.db.Query(ctx, findAllRunningMatchesInCompetition, arg.Competition)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Competition{}
+	items := []Match{}
 	for rows.Next() {
-		var i Competition
+		var i Match
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
+			&i.Competition,
+			&i.Winner,
+			&i.User1,
+			&i.User2,
+			&i.Next,
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {

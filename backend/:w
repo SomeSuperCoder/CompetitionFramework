@@ -16,14 +16,10 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 	}
 	for _, competition := range competitions {
 		log.Printf("Starting competition %v", competition.Name)
-		_, err := repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
+		repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
 			ID:     competition.ID,
 			Status: repository.UnitStatusRunning,
 		})
-		if err != nil {
-			return fmt.Errorf("Failed to start competition %s due to: %w", competition.ID, err)
-		}
-		// TODO: generate the initial match set
 	}
 
 	// TODO: Check the start channel
@@ -34,34 +30,13 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 		matches, err := repo.FindAllRunningMatchesInCompetition(ctx, repository.FindAllRunningMatchesInCompetitionParams{
 			Competition: competition.ID,
 		})
-		if err != nil {
-			log.Fatalln(fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err))
-			continue
-		}
-
-		// Check if all matches are finished
-		finishedCount := 0
-		for _, match := range matches {
-			if match.Status == repository.UnitStatusCompleted {
-				finishedCount += 1
-			}
-		}
-		matchAmount := len(matches)
-		if finishedCount == matchAmount {
-			// TODO: Generate a new match set
-
-			// End the competition if there is only one match left
-			if matchAmount == 1 {
-				_, err := repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
-					ID:     competition.ID,
-					Status: repository.UnitStatusCompleted,
-				})
-				if err != nil {
-					return fmt.Errorf("Failed to finish competition %v due to: %w", competition.Name, err)
-				}
-			}
-		}
 	}
+
+	// Check if all matches are finished
+
+	// Check current match amount and end the competition if required
+
+	// Generate a new match set if needed
 
 	// Check for currently running matches
 
@@ -72,6 +47,4 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 	// Spawn a new round if needed
 
 	// Or... Set the winner and finish the match
-
-	return nil
 }

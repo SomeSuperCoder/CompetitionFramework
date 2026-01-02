@@ -10,5 +10,5 @@ RETURNING *;
 -- name: FindAllMatches :many
 SELECT * FROM matches ORDER BY created_at DESC;
 
--- name: FindAllRunningMatches :many
-SELECT * FROM competitions WHERE status = 'running' ORDER BY created_at ASC;
+-- name: FindAllRunningMatchesInCompetition :many
+SELECT * FROM matches WHERE status = 'running' AND competition = $1 ORDER BY created_at ASC;

@@ -101,6 +101,7 @@ type Competition struct {
 	ID        uuid.UUID        `json:"id"`
 	Name      string           `json:"name"`
 	Status    UnitStatus       `json:"status"`
+	StartTime interface{}      `json:"start_time"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

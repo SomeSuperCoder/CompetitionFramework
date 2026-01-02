@@ -4,10 +4,22 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
 	"github.com/google/uuid"
 )
+
+const matchMakingDeltaTime = time.Second * 3
+
+func BackgroundMatchMaking(ctx context.Context, repo *repository.Queries) {
+	ticker := time.NewTicker(matchMakingDeltaTime)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		log.Println("Running Cron Job")
+	}
+}
 
 func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) error {
 	// Check for pending competitions and start them

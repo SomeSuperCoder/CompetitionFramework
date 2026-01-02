@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/SomeSuperCoder/CompetitionFramework/backend/app/internal"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/app/services"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
 	"github.com/gorilla/rpc/v2"
@@ -28,6 +29,7 @@ func main() {
 	s := rpc.NewServer()
 	s.RegisterCodec(json.NewCodec(), "application/json")
 
+	// Connect to database
 	conn, err := pgx.Connect(ctx, os.Getenv("GOOSE_DBSTRING"))
 	if err != nil {
 		panic(err)
@@ -36,6 +38,7 @@ func main() {
 
 	repo := repository.New(conn)
 
+	// Register Services
 	competitionService := &services.CompetitionService{Repo: repo}
 	s.RegisterService(competitionService, "Competition")
 
@@ -48,6 +51,10 @@ func main() {
 	userService := &services.UserService{Repo: repo}
 	s.RegisterService(userService, "User")
 
+	// Background Match making
+	go internal.BackgroundMatchMaking(ctx, repo)
+
+	// Start the http server
 	http.Handle("/rpc", s)
 
 	log.Printf("RPC started and is listening on :%v", port)

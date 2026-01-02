@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
+	"github.com/google/uuid"
 )
 
 func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) error {
@@ -23,7 +24,11 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 		if err != nil {
 			return fmt.Errorf("Failed to start competition %s due to: %w", competition.ID, err)
 		}
-		// TODO: generate the initial match set
+
+		_, err = GenerateInitialMatches(ctx, repo, competition.ID)
+		if err != nil {
+			return fmt.Errorf("Failed to generate initial matches for %s due to: %w", competition.ID, err)
+		}
 	}
 
 	// TODO: Check the start channel
@@ -74,4 +79,51 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 	// Or... Set the winner and finish the match
 
 	return nil
+}
+
+func IsAnAccpetablePowerOfTwo(n int) bool {
+	if n <= 1 { // We only want numbers bigger than or equal to 2
+		return false
+	}
+	// Returns true if only one bit is set (power of two), false otherwise
+	return (n & (n - 1)) == 0
+}
+
+func GenerateInitialMatches(ctx context.Context, repo *repository.Queries, competition uuid.UUID) ([]repository.Match, error) {
+	matches := []repository.Match{}
+
+	inscriptions, err := repo.GetActiveCompetitionInscriptions(ctx, repository.GetActiveCompetitionInscriptionsParams{
+		Competition: competition,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get paricipants: %w", err)
+	}
+
+	lenInscriptions := len(inscriptions)
+	fmt.Printf("len(inscriptions) = %v\n", lenInscriptions)
+	if !IsAnAccpetablePowerOfTwo(lenInscriptions) {
+		return nil, fmt.Errorf("The number of active participants (%v) is not a power of 2", lenInscriptions)
+	}
+
+	step := 2
+	for i := 0; i < lenInscriptions; i += step {
+		fmt.Println("we are here")
+		insc1 := inscriptions[i]
+		insc2 := inscriptions[i+1]
+
+		fmt.Println(insc1.ID)
+		fmt.Println(insc2.ID)
+		match, err := repo.InsertMatch(ctx, repository.InsertMatchParams{
+			Competition: competition,
+			User1:       insc1.UserID,
+			User2:       &insc2.UserID,
+			Next:        nil, // TODO: fix me
+		})
+		if err != nil {
+			return nil, err
+		}
+		matches = append(matches, match)
+	}
+
+	return matches, nil
 }

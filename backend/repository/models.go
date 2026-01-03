@@ -111,8 +111,6 @@ type Inscription struct {
 	ID          uuid.UUID        `json:"id"`
 	Competition uuid.UUID        `json:"competition"`
 	Participant uuid.UUID        `json:"participant"`
-	Points      int32            `json:"points"`
-	Active      bool             `json:"active"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 

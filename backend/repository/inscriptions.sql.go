@@ -13,11 +13,11 @@ import (
 )
 
 const getActiveCompetitionInscriptions = `-- name: GetActiveCompetitionInscriptions :many
-SELECT i.id, i.competition, i.participant, i.points, i.active, i.created_at, u.id AS user_id
+SELECT i.id, i.competition, i.participant, i.created_at, u.id AS user_id
 FROM inscriptions i
 JOIN users u ON i.participant = u.id
 WHERE i.competition = $1 AND active = True
-ORDER BY points
+ORDER BY i.created_at ASC
 `
 
 type GetActiveCompetitionInscriptionsParams struct {
@@ -28,8 +28,6 @@ type GetActiveCompetitionInscriptionsRow struct {
 	ID          uuid.UUID        `json:"id"`
 	Competition uuid.UUID        `json:"competition"`
 	Participant uuid.UUID        `json:"participant"`
-	Points      int32            `json:"points"`
-	Active      bool             `json:"active"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UserID      uuid.UUID        `json:"user_id"`
 }
@@ -47,8 +45,6 @@ func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetA
 			&i.ID,
 			&i.Competition,
 			&i.Participant,
-			&i.Points,
-			&i.Active,
 			&i.CreatedAt,
 			&i.UserID,
 		); err != nil {
@@ -63,7 +59,7 @@ func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetA
 }
 
 const getUserInscriptions = `-- name: GetUserInscriptions :many
-SELECT id, competition, participant, points, active, created_at FROM inscriptions
+SELECT id, competition, participant, created_at FROM inscriptions
 WHERE participant = $1
 `
 
@@ -84,8 +80,6 @@ func (q *Queries) GetUserInscriptions(ctx context.Context, arg GetUserInscriptio
 			&i.ID,
 			&i.Competition,
 			&i.Participant,
-			&i.Points,
-			&i.Active,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -103,7 +97,7 @@ INSERT INTO inscriptions (
   competition,
   participant
 ) VALUES ( $1, $2 )
-RETURNING id, competition, participant, points, active, created_at
+RETURNING id, competition, participant, created_at
 `
 
 type InsertInscriptionParams struct {
@@ -118,8 +112,6 @@ func (q *Queries) InsertInscription(ctx context.Context, arg InsertInscriptionPa
 		&i.ID,
 		&i.Competition,
 		&i.Participant,
-		&i.Points,
-		&i.Active,
 		&i.CreatedAt,
 	)
 	return i, err

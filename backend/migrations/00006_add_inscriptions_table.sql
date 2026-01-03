@@ -5,8 +5,6 @@ CREATE TABLE inscriptions (
 
   competition UUID NOT NULL REFERENCES competitions(id),
   participant UUID NOT NULL REFERENCES users(id),
-  points INT NOT NULL DEFAULT 0 CHECK ( points >= 0 ),
-  active BOOLEAN NOT NULL DEFAULT True,
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

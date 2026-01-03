@@ -25,6 +25,13 @@ SET
 WHERE id = $1
 RETURNING *;
 
+-- name: SetCompetitionWinner :one
+UPDATE competitions
+SET
+  winner = $2
+WHERE id = $1
+RETURNING *;
+
 -- name: RenameCompetition :one
 UPDATE competitions
 SET name = $2

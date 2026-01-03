@@ -33,6 +33,7 @@ func GenerateInitialMatches(ctx context.Context, repo *repository.Queries, compe
 		return nil, fmt.Errorf("The number of active participants (%v) is not a power of 2", lenInscriptions)
 	}
 
+	// TODO: mark inscriptions as incative
 	step := 2
 	for i := 0; i < lenInscriptions; i += step {
 		insc1 := inscriptions[i]

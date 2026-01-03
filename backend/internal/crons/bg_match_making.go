@@ -8,6 +8,7 @@ import (
 
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/internal/matchmaking"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
+	"github.com/sirupsen/logrus"
 )
 
 const matchMakingDeltaTime = time.Second * 3
@@ -37,7 +38,8 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 			Status: repository.UnitStatusRunning,
 		})
 		if err != nil {
-			return fmt.Errorf("Failed to start competition %s due to: %w", competition.ID, err)
+			logrus.Errorf("Failed to start competition %s due to: %w", competition.ID, err)
+			continue
 		}
 
 		_, err = matchmaking.GenerateInitialMatches(ctx, repo, competition.ID)
@@ -70,7 +72,14 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 		if finishedCount == matchAmount {
 			// End the competition if there is only one match left
 			if matchAmount == 1 {
-				_, err := repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
+				_, err := repo.SetCompetitionWinner(ctx, repository.SetCompetitionWinnerParams{
+					ID:     competition.ID,
+					Winner: matches[0].Winner,
+				})
+				if err != nil {
+					return fmt.Errorf("Failed to set competition winner %v due to: %w", competition.Name, err)
+				}
+				_, err = repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
 					ID:     competition.ID,
 					Status: repository.UnitStatusCompleted,
 				})

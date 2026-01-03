@@ -13,6 +13,7 @@ CREATE TABLE competitions (
   name VARCHAR NOT NULL CHECK (name != ''),
   status unit_status NOT NULL DEFAULT 'awaiting',
   start_time TIMESTAMPTZ NOT NULL,
+  winner UUID REFERENCES users(id),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

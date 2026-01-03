@@ -1,5 +1,5 @@
 meta {
-  name: Generate Matches
+  name: Insert Inscription
   type: http
   seq: 1
 }
@@ -13,9 +13,10 @@ post {
 body:json {
   {
       "jsonrpc": "2.0",
-      "method": "Match.Generate",
+      "method": "Inscription.Insert",
       "params": [{
-        "competition": "3a16ea00-7b92-40f3-88ff-1df500b2d819"
+        "competition": "7dbd17ca-435d-4c2a-b1a3-95bf5b665e17",
+        "participant": "2a7d2ae0-a2ef-4b4f-9bbb-c8e04c371f55"
       }],
       "id": 1
   }

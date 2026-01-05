@@ -81,6 +81,39 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 	return items, nil
 }
 
+const findAllRunningMatches = `-- name: FindAllRunningMatches :many
+SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches WHERE status = 'running' ORDER BY created_at ASC
+`
+
+func (q *Queries) FindAllRunningMatches(ctx context.Context) ([]Match, error) {
+	rows, err := q.db.Query(ctx, findAllRunningMatches)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Match{}
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.Competition,
+			&i.Winner,
+			&i.User1,
+			&i.User2,
+			&i.Next,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findAllRunningMatchesInCompetition = `-- name: FindAllRunningMatchesInCompetition :many
 SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches WHERE status = 'running' AND competition = $1 ORDER BY created_at ASC
 `

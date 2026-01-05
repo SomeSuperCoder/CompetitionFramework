@@ -18,9 +18,10 @@ func IsAnAccpetablePowerOfTwo(n int) bool {
 }
 
 func GenerateInitialMatches(ctx context.Context, repo *repository.Queries, competition uuid.UUID) ([]repository.Match, error) {
+	log.Println("Generating inital matches!")
 	matches := []repository.Match{}
 
-	inscriptions, err := repo.GetActiveCompetitionInscriptions(ctx, repository.GetActiveCompetitionInscriptionsParams{
+	inscriptions, err := repo.GetCompetitionInscriptions(ctx, repository.GetCompetitionInscriptionsParams{
 		Competition: competition,
 	})
 	if err != nil {

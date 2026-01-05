@@ -16,6 +16,9 @@ SELECT * FROM matches WHERE status = 'running' AND competition = $1 ORDER BY cre
 -- name: FindAllCompletedMatchesInCompetitionWithNoDescendents :many
 SELECT * FROM matches WHERE status = 'completed' AND competition = $1 AND next IS NULL ORDER BY created_at ASC;
 
+-- name: FindAllRunningMatches :many
+SELECT * FROM matches WHERE status = 'running' ORDER BY created_at ASC;
+
 -- name: SetNextForMatch :one
 UPDATE matches
 SET next = $2

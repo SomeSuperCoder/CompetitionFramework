@@ -5,11 +5,11 @@ INSERT INTO inscriptions (
 ) VALUES ( $1, $2 )
 RETURNING *;
 
--- name: GetActiveCompetitionInscriptions :many
+-- name: GetCompetitionInscriptions :many
 SELECT i.*, u.id AS user_id
 FROM inscriptions i
 JOIN users u ON i.participant = u.id
-WHERE i.competition = $1 AND active = True
+WHERE i.competition = $1
 ORDER BY i.created_at ASC;
 
 -- name: GetUserInscriptions :many

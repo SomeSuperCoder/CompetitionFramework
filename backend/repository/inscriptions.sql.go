@@ -12,19 +12,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getActiveCompetitionInscriptions = `-- name: GetActiveCompetitionInscriptions :many
+const getCompetitionInscriptions = `-- name: GetCompetitionInscriptions :many
 SELECT i.id, i.competition, i.participant, i.created_at, u.id AS user_id
 FROM inscriptions i
 JOIN users u ON i.participant = u.id
-WHERE i.competition = $1 AND active = True
+WHERE i.competition = $1
 ORDER BY i.created_at ASC
 `
 
-type GetActiveCompetitionInscriptionsParams struct {
+type GetCompetitionInscriptionsParams struct {
 	Competition uuid.UUID `json:"competition"`
 }
 
-type GetActiveCompetitionInscriptionsRow struct {
+type GetCompetitionInscriptionsRow struct {
 	ID          uuid.UUID        `json:"id"`
 	Competition uuid.UUID        `json:"competition"`
 	Participant uuid.UUID        `json:"participant"`
@@ -32,15 +32,15 @@ type GetActiveCompetitionInscriptionsRow struct {
 	UserID      uuid.UUID        `json:"user_id"`
 }
 
-func (q *Queries) GetActiveCompetitionInscriptions(ctx context.Context, arg GetActiveCompetitionInscriptionsParams) ([]GetActiveCompetitionInscriptionsRow, error) {
-	rows, err := q.db.Query(ctx, getActiveCompetitionInscriptions, arg.Competition)
+func (q *Queries) GetCompetitionInscriptions(ctx context.Context, arg GetCompetitionInscriptionsParams) ([]GetCompetitionInscriptionsRow, error) {
+	rows, err := q.db.Query(ctx, getCompetitionInscriptions, arg.Competition)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetActiveCompetitionInscriptionsRow{}
+	items := []GetCompetitionInscriptionsRow{}
 	for rows.Next() {
-		var i GetActiveCompetitionInscriptionsRow
+		var i GetCompetitionInscriptionsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Competition,

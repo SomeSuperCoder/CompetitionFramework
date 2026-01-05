@@ -12,6 +12,30 @@ import (
 	"github.com/google/uuid"
 )
 
+const findAllCompletedRoundsInMatch = `-- name: FindAllCompletedRoundsInMatch :one
+SELECT id, task, match, start_time, end_time, winner, status, created_at FROM rounds WHERE status = 'completed' AND match = $1 ORDER BY created_at ASC
+`
+
+type FindAllCompletedRoundsInMatchParams struct {
+	Match uuid.UUID `json:"match"`
+}
+
+func (q *Queries) FindAllCompletedRoundsInMatch(ctx context.Context, arg FindAllCompletedRoundsInMatchParams) (Round, error) {
+	row := q.db.QueryRow(ctx, findAllCompletedRoundsInMatch, arg.Match)
+	var i Round
+	err := row.Scan(
+		&i.ID,
+		&i.Task,
+		&i.Match,
+		&i.StartTime,
+		&i.EndTime,
+		&i.Winner,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const insertRound = `-- name: InsertRound :one
 INSERT INTO rounds (
   task,

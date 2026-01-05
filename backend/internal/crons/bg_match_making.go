@@ -38,7 +38,7 @@ func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) er
 			Status: repository.UnitStatusRunning,
 		})
 		if err != nil {
-			logrus.Errorf("Failed to start competition %s due to: %w", competition.ID, err)
+			logrus.Errorln(fmt.Errorf("Failed to start competition %s due to: %w", competition.ID, err))
 			continue
 		}
 

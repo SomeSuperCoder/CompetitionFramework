@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/SomeSuperCoder/CompetitionFramework/backend/app/services"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/internal/crons"
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
+	"github.com/SomeSuperCoder/CompetitionFramework/backend/rpc/services"
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
 	"github.com/jackc/pgx/v5"

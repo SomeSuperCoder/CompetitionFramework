@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteTask = `-- name: DeleteTask :one
@@ -70,19 +71,26 @@ const insertTask = `-- name: InsertTask :one
 INSERT INTO tasks (
   name,
   details,
-  points
-) VALUES ( $1, $2, $3 )
+  points,
+  duration
+) VALUES ( $1, $2, $3, $4 )
 RETURNING id, name, details, points, duration, created_at
 `
 
 type InsertTaskParams struct {
-	Name    string `json:"name"`
-	Details string `json:"details"`
-	Points  int32  `json:"points"`
+	Name     string          `json:"name"`
+	Details  string          `json:"details"`
+	Points   int32           `json:"points"`
+	Duration pgtype.Interval `json:"duration"`
 }
 
 func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) (Task, error) {
-	row := q.db.QueryRow(ctx, insertTask, arg.Name, arg.Details, arg.Points)
+	row := q.db.QueryRow(ctx, insertTask,
+		arg.Name,
+		arg.Details,
+		arg.Points,
+		arg.Duration,
+	)
 	var i Task
 	err := row.Scan(
 		&i.ID,

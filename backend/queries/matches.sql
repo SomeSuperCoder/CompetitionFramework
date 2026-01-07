@@ -52,6 +52,7 @@ RETURNING *;
 -- name: SetWinnerAndFinishMatch :one
 UPDATE matches
 SET
-  winner = CASE WHEN matches.user1_points > user2_points THEN user1 ELSE user2 END
+  winner = CASE WHEN matches.user1_points > user2_points THEN user1 ELSE user2 END,
+  status = 'completed'
 WHERE id = $1
 RETURNING *;

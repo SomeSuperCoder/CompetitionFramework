@@ -2,8 +2,9 @@
 INSERT INTO tasks (
   name,
   details,
-  points
-) VALUES ( $1, $2, $3 )
+  points,
+  duration
+) VALUES ( $1, $2, $3, $4 )
 RETURNING *;
 
 -- name: FindAllTasks :many

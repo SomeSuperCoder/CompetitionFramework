@@ -286,7 +286,8 @@ func (q *Queries) SetNextForMatch(ctx context.Context, arg SetNextForMatchParams
 const setWinnerAndFinishMatch = `-- name: SetWinnerAndFinishMatch :one
 UPDATE matches
 SET
-  winner = CASE WHEN matches.user1_points > user2_points THEN user1 ELSE user2 END
+  winner = CASE WHEN matches.user1_points > user2_points THEN user1 ELSE user2 END,
+  status = 'completed'
 WHERE id = $1
 RETURNING id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at
 `

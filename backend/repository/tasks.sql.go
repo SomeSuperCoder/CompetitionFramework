@@ -14,7 +14,7 @@ import (
 const deleteTask = `-- name: DeleteTask :one
 DELETE FROM tasks
 WHERE id = $1
-RETURNING id, name, details, points, created_at
+RETURNING id, name, details, points, duration, created_at
 `
 
 type DeleteTaskParams struct {
@@ -29,13 +29,14 @@ func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) (Task, e
 		&i.Name,
 		&i.Details,
 		&i.Points,
+		&i.Duration,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const findAllTasks = `-- name: FindAllTasks :many
-SELECT id, name, details, points, created_at FROM tasks ORDER BY created_at DESC
+SELECT id, name, details, points, duration, created_at FROM tasks ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
@@ -52,6 +53,7 @@ func (q *Queries) FindAllTasks(ctx context.Context) ([]Task, error) {
 			&i.Name,
 			&i.Details,
 			&i.Points,
+			&i.Duration,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -70,7 +72,7 @@ INSERT INTO tasks (
   details,
   points
 ) VALUES ( $1, $2, $3 )
-RETURNING id, name, details, points, created_at
+RETURNING id, name, details, points, duration, created_at
 `
 
 type InsertTaskParams struct {
@@ -87,6 +89,7 @@ func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) (Task, e
 		&i.Name,
 		&i.Details,
 		&i.Points,
+		&i.Duration,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -99,7 +102,7 @@ SET
     details = COALESCE($3, details),
     points = COALESCE($4, points)
 WHERE id = $1
-RETURNING id, name, details, points, created_at
+RETURNING id, name, details, points, duration, created_at
 `
 
 type UpdateTaskParams struct {
@@ -122,6 +125,7 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, e
 		&i.Name,
 		&i.Details,
 		&i.Points,
+		&i.Duration,
 		&i.CreatedAt,
 	)
 	return i, err

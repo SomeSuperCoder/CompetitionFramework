@@ -35,7 +35,7 @@ func (q *Queries) DeleteTaskOrder(ctx context.Context, arg DeleteTaskOrderParams
 }
 
 const getTasksForCompetition = `-- name: GetTasksForCompetition :many
-SELECT tasks.id, tasks.name, tasks.details, tasks.points, tasks.created_at FROM task_orders
+SELECT tasks.id, tasks.name, tasks.details, tasks.points, tasks.duration, tasks.created_at FROM task_orders
 JOIN tasks ON task_orders.task = tasks.id
 WHERE competition = $1
 ORDER BY task_orders.created_at DESC
@@ -59,6 +59,7 @@ func (q *Queries) GetTasksForCompetition(ctx context.Context, arg GetTasksForCom
 			&i.Name,
 			&i.Details,
 			&i.Points,
+			&i.Duration,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

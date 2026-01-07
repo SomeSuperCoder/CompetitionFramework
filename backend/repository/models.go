@@ -144,6 +144,7 @@ type Task struct {
 	Name      string           `json:"name"`
 	Details   string           `json:"details"`
 	Points    int32            `json:"points"`
+	Duration  pgtype.Interval  `json:"duration"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

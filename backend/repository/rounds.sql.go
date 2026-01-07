@@ -12,6 +12,55 @@ import (
 	"github.com/google/uuid"
 )
 
+const createNewRoundForMatch = `-- name: CreateNewRoundForMatch :one
+WITH match AS (
+  SELECT competition FROM matches
+  WHERE id = $1
+),
+task_data AS (
+  SELECT
+    tasks.id as task_id,
+    tasks.duration as task_duration
+  FROM task_orders
+  JOIN tasks ON task_orders.task = tasks.id
+  WHERE task_orders.competition = (SELECT competition FROM match)
+  ORDER BY RANDOM()
+  LIMIT 1
+)
+INSERT INTO rounds (
+  task,
+  match,
+  start_time,
+  end_time
+) VALUES (
+  (SELECT task_id FROM task_data),
+  $1,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP + (SELECT task_duration FROM task_data)
+)
+RETURNING id, task, match, start_time, end_time, winner, status, created_at
+`
+
+type CreateNewRoundForMatchParams struct {
+	Match uuid.UUID `json:"match"`
+}
+
+func (q *Queries) CreateNewRoundForMatch(ctx context.Context, arg CreateNewRoundForMatchParams) (Round, error) {
+	row := q.db.QueryRow(ctx, createNewRoundForMatch, arg.Match)
+	var i Round
+	err := row.Scan(
+		&i.ID,
+		&i.Task,
+		&i.Match,
+		&i.StartTime,
+		&i.EndTime,
+		&i.Winner,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const findAllCompletedRoundsInMatch = `-- name: FindAllCompletedRoundsInMatch :many
 SELECT id, task, match, start_time, end_time, winner, status, created_at FROM rounds WHERE status = 'completed' AND match = $1 ORDER BY created_at ASC
 `

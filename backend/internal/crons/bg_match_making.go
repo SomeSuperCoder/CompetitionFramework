@@ -88,7 +88,12 @@ func ProcessRunningMatches(ctx context.Context, repo *repository.Queries) error 
 		if stat.CompletedCount >= int64(stat.MinRounds) {
 			// Check if a tie break is required
 			if stat.User1Points == stat.User2Points {
-				// TODO: spawn a new round
+				_, err := repo.CreateNewRoundForMatch(ctx, repository.CreateNewRoundForMatchParams{
+					Match: stat.Match,
+				})
+				if err != nil {
+					return fmt.Errorf("Failed to create a new round for match %v due to: %w", stat.Match, err)
+				}
 			} else {
 				// TODO: Set the winner and finish the match
 			}

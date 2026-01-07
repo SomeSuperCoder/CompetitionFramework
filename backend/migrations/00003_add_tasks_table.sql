@@ -6,6 +6,7 @@ CREATE TABLE tasks (
   name VARCHAR NOT NULL CHECK (name != ''),
   details TEXT NOT NULL CHECK (details != ''),
   points INT NOT NULL CHECK (points > 0),
+  duration INTERVAL NOT NULL,
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -135,7 +135,6 @@ SELECT
 FROM matches
 WHERE next IS NULL
 GROUP BY competition
-ORDER BY created_at ASC
 `
 
 type GetCompetitionDescendentlessMatchStatsRow struct {
@@ -172,7 +171,7 @@ SELECT
   matches.user1_points,
   matches.user2_points
 FROM matches
-JOIN competitions ON competition.id = matches.competition
+JOIN competitions ON competitions.id = matches.competition
 LEFT JOIN rounds ON rounds.match = matches.id
 WHERE matches.status = 'running'
 GROUP BY matches.id, competitions.min_rounds, matches.user1_points, matches.user2_points

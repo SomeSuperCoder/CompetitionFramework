@@ -15,8 +15,9 @@ WHERE competitions.id = $1;
 -- name: InsertCompetition :one
 INSERT INTO competitions (
   name,
-  start_time
-) VALUES ( $1, $2 )
+  start_time,
+  min_rounds
+) VALUES ( $1, $2, $3 )
 RETURNING *;
 
 -- name: FindAllCompetitions :many

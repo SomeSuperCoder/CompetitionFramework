@@ -75,7 +75,7 @@ func StartPendingCompetitions(ctx context.Context, repo *repository.Queries) err
 func ProcessRunningMatches(ctx context.Context, repo *repository.Queries) error {
 	stats, err := repo.GetLockedMatchRoundStats(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to get lockend match round stats due to: %w", err)
+		return fmt.Errorf("Failed to get locked match round stats due to: %w", err)
 	}
 	for _, stat := range stats {
 		log.Println("=======================")

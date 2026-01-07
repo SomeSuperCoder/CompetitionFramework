@@ -164,18 +164,20 @@ func (q *Queries) FinishCompetition(ctx context.Context, arg FinishCompetitionPa
 const insertCompetition = `-- name: InsertCompetition :one
 INSERT INTO competitions (
   name,
-  start_time
-) VALUES ( $1, $2 )
+  start_time,
+  min_rounds
+) VALUES ( $1, $2, $3 )
 RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type InsertCompetitionParams struct {
 	Name      string    `json:"name"`
 	StartTime time.Time `json:"start_time"`
+	MinRounds int32     `json:"min_rounds"`
 }
 
 func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionParams) (Competition, error) {
-	row := q.db.QueryRow(ctx, insertCompetition, arg.Name, arg.StartTime)
+	row := q.db.QueryRow(ctx, insertCompetition, arg.Name, arg.StartTime, arg.MinRounds)
 	var i Competition
 	err := row.Scan(
 		&i.ID,

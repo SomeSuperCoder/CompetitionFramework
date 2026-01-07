@@ -6,9 +6,17 @@ import (
 	"log"
 
 	"github.com/SomeSuperCoder/CompetitionFramework/backend/repository"
+	"github.com/google/uuid"
 )
 
-func GenerateMatchesFromFinishedOnes(ctx context.Context, repo *repository.Queries, matches []repository.Match) ([]repository.Match, error) {
+func GenerateMatchesFromFinishedOnes(ctx context.Context, repo *repository.Queries, competition uuid.UUID) ([]repository.Match, error) {
+	matches, err := repo.FindAllLeafMatchesOfCompetiton(ctx, repository.FindAllLeafMatchesOfCompetitonParams{
+		Competition: competition,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get leaf matches for competition %v due to: %w", competition, err)
+	}
+
 	newMatches := []repository.Match{}
 
 	lenMatches := len(matches)

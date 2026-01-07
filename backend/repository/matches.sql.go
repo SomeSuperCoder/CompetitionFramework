@@ -11,6 +11,46 @@ import (
 	"github.com/google/uuid"
 )
 
+const findAllLeafMatchesOfCompetiton = `-- name: FindAllLeafMatchesOfCompetiton :many
+SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches
+WHERE competition = $1 AND
+      next IS NULL AND
+      status = "completed"
+`
+
+type FindAllLeafMatchesOfCompetitonParams struct {
+	Competition uuid.UUID `json:"competition"`
+}
+
+func (q *Queries) FindAllLeafMatchesOfCompetiton(ctx context.Context, arg FindAllLeafMatchesOfCompetitonParams) ([]Match, error) {
+	rows, err := q.db.Query(ctx, findAllLeafMatchesOfCompetiton, arg.Competition)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Match{}
+	for rows.Next() {
+		var i Match
+		if err := rows.Scan(
+			&i.ID,
+			&i.Competition,
+			&i.Winner,
+			&i.User1,
+			&i.User2,
+			&i.Next,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const findAllMatches = `-- name: FindAllMatches :many
 SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches ORDER BY created_at DESC
 `

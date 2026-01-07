@@ -84,7 +84,7 @@ func ProcessCurrentlyRunningCompetitons(ctx context.Context, repo *repository.Qu
 	}
 
 	// Process completed matches
-	err = ProcessCompletedMatchesOfCompetition(ctx, repo)
+	err = ProcessCompletedMatchesOfCompetitions(ctx, repo)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func ProcessCurrentlyRunningCompetitons(ctx context.Context, repo *repository.Qu
 	return err
 }
 
-func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.Queries) error {
+func ProcessCompletedMatchesOfCompetitions(ctx context.Context, repo *repository.Queries) error {
 	stats, err := repo.GetCompetitionDescendentlessMatchStats(ctx)
 	if err != nil {
 		return fmt.Errorf("Failed to get stats for descendentless matches due to: %w", err)
@@ -114,8 +114,7 @@ func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.
 					return fmt.Errorf("Failed to finish competition %v due to: %w", stat.Competition, err)
 				}
 			} else {
-				// TODO: fix me
-				_, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, []repository.Match{})
+				_, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, stat.Competition)
 				if err != nil {
 					return err
 				}
@@ -123,22 +122,6 @@ func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.
 		}
 	}
 
-	// if finishedCount == matchAmount {
-	// End the competition if there is only one match left
-	// if matchAmount == 1 {
-	// err := FinishCompetition(ctx, repo, competition, matches)
-	// if err != nil {
-	// return err
-	// }
-	// } else {
-	// Otherwise generate a new match set
-	// _, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, matches)
-	// if err != nil {
-	// return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
-	// }
-
-	// }
-	// }
 	return nil
 }
 

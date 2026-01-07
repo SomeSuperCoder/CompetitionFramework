@@ -7,6 +7,12 @@ INSERT INTO matches (
 ) VALUES ( $1, $2, $3, $4 )
 RETURNING *;
 
+-- name: FindAllLeafMatchesOfCompetiton :many
+SELECT * FROM matches
+WHERE competition = $1 AND
+      next IS NULL AND
+      status = "completed";
+
 -- name: FindAllMatches :many
 SELECT * FROM matches ORDER BY created_at DESC;
 

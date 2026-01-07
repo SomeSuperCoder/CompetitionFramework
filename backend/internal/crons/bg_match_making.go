@@ -26,11 +26,18 @@ func BackgroundMatchMaking(ctx context.Context, repo *repository.Queries) {
 }
 
 func BackgroundMatchMakingStep(ctx context.Context, repo *repository.Queries) error {
+	// ===== Competitions =========
 	err := StartPendingCompetitions(ctx, repo)
 	if err != nil {
 		return err
 	}
-	err = ProcessCurrentlyRunningCompetitons(ctx, repo)
+
+	// ===== Matches =========
+	err = ProcessCompletedMatches(ctx, repo)
+	if err != nil {
+		return err
+	}
+	err = ProcessRunningMatches(ctx, repo)
 	if err != nil {
 		return err
 	}
@@ -65,34 +72,34 @@ func StartPendingCompetitions(ctx context.Context, repo *repository.Queries) err
 
 	return nil
 }
-func ProcessCurrentlyRunningCompetitons(ctx context.Context, repo *repository.Queries) error {
-	// Get all currently running competitions
-	competitions, err := repo.FindAllRunningCompetitions(ctx)
+func ProcessRunningMatches(ctx context.Context, repo *repository.Queries) error {
+	stats, err := repo.GetLockedMatchRoundStats(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to get lockend match round stats due to: %w", err)
 	}
-	log.Printf("The amount of currently running competitions is: %v", len(competitions))
-	for _, competition := range competitions {
-		// Process running matches
-		runningMatches, err := repo.FindAllRunningMatchesInCompetition(ctx, repository.FindAllRunningMatchesInCompetitionParams{
-			Competition: competition.ID,
-		})
-		err = ProcessRunningMatchesOfCompetition(ctx, repo, competition, runningMatches)
-		if err != nil {
-			return err
+	for _, stat := range stats {
+		log.Println("=======================")
+		log.Printf("Stats of RUNNING MATCH %v:", stat.Match)
+		log.Printf("CompletedCount: %v", stat.CompletedCount)
+		log.Printf("MinRounds: %v", stat.MinRounds)
+		log.Println("=======================")
+
+		// Check if min_rounds is satisfied
+		if stat.CompletedCount >= int64(stat.MinRounds) {
+			// Check if a tie break is required
+			if stat.User1Points == stat.User2Points {
+				// TODO: spawn a new round
+			} else {
+				// TODO: Set the winner and finish the match
+			}
 		}
+
 	}
 
-	// Process completed matches
-	err = ProcessCompletedMatchesOfCompetitions(ctx, repo)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return nil
 }
 
-func ProcessCompletedMatchesOfCompetitions(ctx context.Context, repo *repository.Queries) error {
+func ProcessCompletedMatches(ctx context.Context, repo *repository.Queries) error {
 	stats, err := repo.GetCompetitionDescendentlessMatchStats(ctx)
 	if err != nil {
 		return fmt.Errorf("Failed to get stats for descendentless matches due to: %w", err)
@@ -100,7 +107,7 @@ func ProcessCompletedMatchesOfCompetitions(ctx context.Context, repo *repository
 
 	for _, stat := range stats {
 		log.Println("=======================")
-		log.Printf("Stats of %v:", stat.Competition)
+		log.Printf("Stats of RUNNING COMPETITION %v:", stat.Competition)
 		log.Printf("CompletedCount: %v", stat.CompletedCount)
 		log.Printf("TotalCount: %v", stat.TotalCount)
 		log.Println("=======================")
@@ -121,36 +128,6 @@ func ProcessCompletedMatchesOfCompetitions(ctx context.Context, repo *repository
 			}
 		}
 	}
-
-	return nil
-}
-
-func ProcessRunningMatchesOfCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {
-	// Find All Running Matches
-	for _, match := range matches {
-		if match.Status == repository.UnitStatusRunning {
-			// Find All Compeleted Rounds
-			rounds, err := repo.FindAllCompletedRoundsInMatch(ctx, repository.FindAllCompletedRoundsInMatchParams{
-				Match: match.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("Failed to find completed rounds for match %v due to: %w", match.ID, err)
-			}
-
-			// Check if min_rounds is satisfied
-			if len(rounds) < int(competition.MinRounds) {
-				// If not, check if there are any currently running matches
-			} else {
-				// Check if a tie break is required
-
-			}
-
-		}
-	}
-
-	// Spawn a new round if needed
-
-	// Or... Set the winner and finish the match
 
 	return nil
 }

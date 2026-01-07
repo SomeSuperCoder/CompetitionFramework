@@ -123,6 +123,8 @@ type Match struct {
 	User2       *uuid.UUID       `json:"user2"`
 	Next        *uuid.UUID       `json:"next"`
 	Status      UnitStatus       `json:"status"`
+	User1Points int32            `json:"user1_points"`
+	User2Points int32            `json:"user2_points"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 

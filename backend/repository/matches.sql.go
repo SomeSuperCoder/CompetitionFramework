@@ -12,7 +12,7 @@ import (
 )
 
 const findAllLeafMatchesOfCompetiton = `-- name: FindAllLeafMatchesOfCompetiton :many
-SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches
+SELECT id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at FROM matches
 WHERE competition = $1 AND
       next IS NULL AND
       status = "completed"
@@ -39,6 +39,8 @@ func (q *Queries) FindAllLeafMatchesOfCompetiton(ctx context.Context, arg FindAl
 			&i.User2,
 			&i.Next,
 			&i.Status,
+			&i.User1Points,
+			&i.User2Points,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -52,7 +54,7 @@ func (q *Queries) FindAllLeafMatchesOfCompetiton(ctx context.Context, arg FindAl
 }
 
 const findAllMatches = `-- name: FindAllMatches :many
-SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches ORDER BY created_at DESC
+SELECT id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at FROM matches ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
@@ -72,6 +74,8 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 			&i.User2,
 			&i.Next,
 			&i.Status,
+			&i.User1Points,
+			&i.User2Points,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -85,7 +89,7 @@ func (q *Queries) FindAllMatches(ctx context.Context) ([]Match, error) {
 }
 
 const findAllRunningMatchesInCompetition = `-- name: FindAllRunningMatchesInCompetition :many
-SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches WHERE status = 'running' AND competition = $1 ORDER BY created_at ASC
+SELECT id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at FROM matches WHERE status = 'running' AND competition = $1 ORDER BY created_at ASC
 `
 
 type FindAllRunningMatchesInCompetitionParams struct {
@@ -109,6 +113,8 @@ func (q *Queries) FindAllRunningMatchesInCompetition(ctx context.Context, arg Fi
 			&i.User2,
 			&i.Next,
 			&i.Status,
+			&i.User1Points,
+			&i.User2Points,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -158,6 +164,55 @@ func (q *Queries) GetCompetitionDescendentlessMatchStats(ctx context.Context) ([
 	return items, nil
 }
 
+const getLockedMatchRoundStats = `-- name: GetLockedMatchRoundStats :many
+SELECT
+  matches.id as match,
+  COUNT(CASE WHEN rounds.status = 'completed' THEN 1 END) AS completed_count,
+  competitions.min_rounds,
+  matches.user1_points,
+  matches.user2_points
+FROM matches
+JOIN competitions ON competition.id = matches.competition
+LEFT JOIN rounds ON rounds.match = matches.id
+WHERE matches.status = 'running'
+GROUP BY matches.id, competitions.min_rounds, matches.user1_points, matches.user2_points
+HAVING COUNT(CASE WHEN rounds.status = 'running' THEN 1 END) = 0
+`
+
+type GetLockedMatchRoundStatsRow struct {
+	Match          uuid.UUID `json:"match"`
+	CompletedCount int64     `json:"completed_count"`
+	MinRounds      int32     `json:"min_rounds"`
+	User1Points    int32     `json:"user1_points"`
+	User2Points    int32     `json:"user2_points"`
+}
+
+func (q *Queries) GetLockedMatchRoundStats(ctx context.Context) ([]GetLockedMatchRoundStatsRow, error) {
+	rows, err := q.db.Query(ctx, getLockedMatchRoundStats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetLockedMatchRoundStatsRow{}
+	for rows.Next() {
+		var i GetLockedMatchRoundStatsRow
+		if err := rows.Scan(
+			&i.Match,
+			&i.CompletedCount,
+			&i.MinRounds,
+			&i.User1Points,
+			&i.User2Points,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertMatch = `-- name: InsertMatch :one
 INSERT INTO matches (
   competition,
@@ -165,7 +220,7 @@ INSERT INTO matches (
   user2,
   next
 ) VALUES ( $1, $2, $3, $4 )
-RETURNING id, competition, winner, user1, user2, next, status, created_at
+RETURNING id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at
 `
 
 type InsertMatchParams struct {
@@ -191,6 +246,8 @@ func (q *Queries) InsertMatch(ctx context.Context, arg InsertMatchParams) (Match
 		&i.User2,
 		&i.Next,
 		&i.Status,
+		&i.User1Points,
+		&i.User2Points,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -200,7 +257,7 @@ const setNextForMatch = `-- name: SetNextForMatch :one
 UPDATE matches
 SET next = $2
 WHERE id = $1
-RETURNING id, competition, winner, user1, user2, next, status, created_at
+RETURNING id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at
 `
 
 type SetNextForMatchParams struct {
@@ -219,6 +276,8 @@ func (q *Queries) SetNextForMatch(ctx context.Context, arg SetNextForMatchParams
 		&i.User2,
 		&i.Next,
 		&i.Status,
+		&i.User1Points,
+		&i.User2Points,
 		&i.CreatedAt,
 	)
 	return i, err

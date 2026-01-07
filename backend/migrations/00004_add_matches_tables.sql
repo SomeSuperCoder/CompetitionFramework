@@ -9,6 +9,8 @@ CREATE TABLE matches (
   user2 UUID REFERENCES users(id) CHECK (user1 != user2), -- can be null
   next UUID REFERENCES matches(id) CHECK (next != id),
   status unit_status NOT NULL DEFAULT 'running',
+  user1_points INT NOT NULL DEFAULT 0 CHECK (user1_points >= 0),
+  user2_points INT NOT NULL DEFAULT 0 CHECK (user2_points >= 0),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

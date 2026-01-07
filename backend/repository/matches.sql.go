@@ -11,43 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const findAllCompletedMatchesInCompetitionWithNoDescendents = `-- name: FindAllCompletedMatchesInCompetitionWithNoDescendents :many
-SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches WHERE status = 'completed' AND competition = $1 AND next IS NULL ORDER BY created_at ASC
-`
-
-type FindAllCompletedMatchesInCompetitionWithNoDescendentsParams struct {
-	Competition uuid.UUID `json:"competition"`
-}
-
-func (q *Queries) FindAllCompletedMatchesInCompetitionWithNoDescendents(ctx context.Context, arg FindAllCompletedMatchesInCompetitionWithNoDescendentsParams) ([]Match, error) {
-	rows, err := q.db.Query(ctx, findAllCompletedMatchesInCompetitionWithNoDescendents, arg.Competition)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Match{}
-	for rows.Next() {
-		var i Match
-		if err := rows.Scan(
-			&i.ID,
-			&i.Competition,
-			&i.Winner,
-			&i.User1,
-			&i.User2,
-			&i.Next,
-			&i.Status,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const findAllMatches = `-- name: FindAllMatches :many
 SELECT id, competition, winner, user1, user2, next, status, created_at FROM matches ORDER BY created_at DESC
 `
@@ -108,6 +71,43 @@ func (q *Queries) FindAllRunningMatchesInCompetition(ctx context.Context, arg Fi
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCompetitionDescendentlessMatchStats = `-- name: GetCompetitionDescendentlessMatchStats :many
+SELECT
+  competition,
+  COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed_count,
+  COUNT(*) AS total_count
+FROM matches
+WHERE next IS NULL
+GROUP BY competition
+ORDER BY created_at ASC
+`
+
+type GetCompetitionDescendentlessMatchStatsRow struct {
+	Competition    uuid.UUID `json:"competition"`
+	CompletedCount int64     `json:"completed_count"`
+	TotalCount     int64     `json:"total_count"`
+}
+
+func (q *Queries) GetCompetitionDescendentlessMatchStats(ctx context.Context) ([]GetCompetitionDescendentlessMatchStatsRow, error) {
+	rows, err := q.db.Query(ctx, getCompetitionDescendentlessMatchStats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCompetitionDescendentlessMatchStatsRow{}
+	for rows.Next() {
+		var i GetCompetitionDescendentlessMatchStatsRow
+		if err := rows.Scan(&i.Competition, &i.CompletedCount, &i.TotalCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

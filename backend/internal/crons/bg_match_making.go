@@ -81,54 +81,64 @@ func ProcessCurrentlyRunningCompetitons(ctx context.Context, repo *repository.Qu
 		if err != nil {
 			return err
 		}
+	}
 
-		// Process completed matches
-		completedMatches, err := repo.FindAllCompletedMatchesInCompetitionWithNoDescendents(ctx, repository.FindAllCompletedMatchesInCompetitionWithNoDescendentsParams{
-			Competition: competition.ID,
-		})
-		if err != nil {
-			return fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err)
-		}
-		err = ProcessCompletedMatchesOfCompetition(ctx, repo, competition, completedMatches)
-		if err != nil {
-			return err
-		}
+	// Process completed matches
+	err = ProcessCompletedMatchesOfCompetition(ctx, repo)
+	if err != nil {
+		return err
 	}
 
 	return err
 }
 
-func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {
-	// Check if all matches are finished
-	finishedCount := CountFinishedMatches(matches)
-	matchAmount := len(matches)
-	if finishedCount == matchAmount {
-		// End the competition if there is only one match left
-		if matchAmount == 1 {
-			err := FinishCompetition(ctx, repo, competition, matches)
-			if err != nil {
-				return err
-			}
-		} else {
-			// Otherwise generate a new match set
-			_, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, matches)
-			if err != nil {
-				return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
-			}
+func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.Queries) error {
+	stats, err := repo.GetCompetitionDescendentlessMatchStats(ctx)
+	if err != nil {
+		return fmt.Errorf("Failed to get stats for descendentless matches due to: %w", err)
+	}
 
+	for _, stat := range stats {
+		log.Println("=======================")
+		log.Printf("Stats of %v:", stat.Competition)
+		log.Printf("CompletedCount: %v", stat.CompletedCount)
+		log.Printf("TotalCount: %v", stat.TotalCount)
+		log.Println("=======================")
+
+		if stat.CompletedCount == stat.TotalCount {
+			if stat.TotalCount == 1 {
+				// TODO: fix me
+				err := FinishCompetition(ctx, repo, repository.Competition{}, []repository.Match{})
+				if err != nil {
+					return err
+				}
+			} else {
+				// TODO: fix me
+				_, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, []repository.Match{})
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
+
+	// if finishedCount == matchAmount {
+	// End the competition if there is only one match left
+	// if matchAmount == 1 {
+	// err := FinishCompetition(ctx, repo, competition, matches)
+	// if err != nil {
+	// return err
+	// }
+	// } else {
+	// Otherwise generate a new match set
+	// _, err := matchmaking.GenerateMatchesFromFinishedOnes(ctx, repo, matches)
+	// if err != nil {
+	// return fmt.Errorf("Failed to generate a new match set from finished ones for %s due to: %w", competition.ID, err)
+	// }
+
+	// }
+	// }
 	return nil
-}
-
-func CountFinishedMatches(matches []repository.Match) int {
-	finishedCount := 0
-	for _, match := range matches {
-		if match.Status == repository.UnitStatusCompleted {
-			finishedCount += 1
-		}
-	}
-	return finishedCount
 }
 
 func ProcessRunningMatchesOfCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {

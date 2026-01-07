@@ -107,10 +107,11 @@ func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.
 
 		if stat.CompletedCount == stat.TotalCount {
 			if stat.TotalCount == 1 {
-				// TODO: fix me
-				err := FinishCompetition(ctx, repo, repository.Competition{}, []repository.Match{})
+				err := repo.FinishCompetition(ctx, repository.FinishCompetitionParams{
+					ID: stat.Competition,
+				})
 				if err != nil {
-					return err
+					return fmt.Errorf("Failed to finish competition %v due to: %w", stat.Competition, err)
 				}
 			} else {
 				// TODO: fix me
@@ -168,23 +169,5 @@ func ProcessRunningMatchesOfCompetition(ctx context.Context, repo *repository.Qu
 
 	// Or... Set the winner and finish the match
 
-	return nil
-}
-
-func FinishCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {
-	_, err := repo.SetCompetitionWinner(ctx, repository.SetCompetitionWinnerParams{
-		ID:     competition.ID,
-		Winner: matches[0].Winner,
-	})
-	if err != nil {
-		return fmt.Errorf("Failed to set competition winner %v due to: %w", competition.Name, err)
-	}
-	_, err = repo.SetCompetitionStatus(ctx, repository.SetCompetitionStatusParams{
-		ID:     competition.ID,
-		Status: repository.UnitStatusCompleted,
-	})
-	if err != nil {
-		return fmt.Errorf("Failed to finish competition %v due to: %w", competition.Name, err)
-	}
 	return nil
 }

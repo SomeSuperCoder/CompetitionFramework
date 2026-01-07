@@ -137,6 +137,30 @@ func (q *Queries) FindAllRunningCompetitions(ctx context.Context) ([]Competition
 	return items, nil
 }
 
+const finishCompetition = `-- name: FinishCompetition :exec
+WITH final_match AS (
+  SELECT winner
+  FROM matches
+  WHERE competition = $1
+  AND next IS NULL
+  LIMIT 1
+)
+UPDATE competitions
+SET
+  winner = (SELECT winner FROM final_match),
+  status = 'completed'
+WHERE competitions.id = $1
+`
+
+type FinishCompetitionParams struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (q *Queries) FinishCompetition(ctx context.Context, arg FinishCompetitionParams) error {
+	_, err := q.db.Exec(ctx, finishCompetition, arg.ID)
+	return err
+}
+
 const insertCompetition = `-- name: InsertCompetition :one
 INSERT INTO competitions (
   name,
@@ -207,34 +231,6 @@ type SetCompetitionStatusParams struct {
 
 func (q *Queries) SetCompetitionStatus(ctx context.Context, arg SetCompetitionStatusParams) (Competition, error) {
 	row := q.db.QueryRow(ctx, setCompetitionStatus, arg.ID, arg.Status)
-	var i Competition
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Status,
-		&i.StartTime,
-		&i.Winner,
-		&i.MinRounds,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const setCompetitionWinner = `-- name: SetCompetitionWinner :one
-UPDATE competitions
-SET
-  winner = $2
-WHERE id = $1
-RETURNING id, name, status, start_time, winner, min_rounds, created_at
-`
-
-type SetCompetitionWinnerParams struct {
-	ID     uuid.UUID  `json:"id"`
-	Winner *uuid.UUID `json:"winner"`
-}
-
-func (q *Queries) SetCompetitionWinner(ctx context.Context, arg SetCompetitionWinnerParams) (Competition, error) {
-	row := q.db.QueryRow(ctx, setCompetitionWinner, arg.ID, arg.Winner)
 	var i Competition
 	err := row.Scan(
 		&i.ID,

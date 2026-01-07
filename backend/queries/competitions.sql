@@ -1,3 +1,17 @@
+-- name: FinishCompetition :exec
+WITH final_match AS (
+  SELECT winner
+  FROM matches
+  WHERE competition = $1
+  AND next IS NULL
+  LIMIT 1
+)
+UPDATE competitions
+SET
+  winner = (SELECT winner FROM final_match),
+  status = 'completed'
+WHERE competitions.id = $1;
+
 -- name: InsertCompetition :one
 INSERT INTO competitions (
   name,
@@ -22,13 +36,6 @@ ORDER BY start_time ASC;
 UPDATE competitions
 SET
   status = $2
-WHERE id = $1
-RETURNING *;
-
--- name: SetCompetitionWinner :one
-UPDATE competitions
-SET
-  winner = $2
 WHERE id = $1
 RETURNING *;
 

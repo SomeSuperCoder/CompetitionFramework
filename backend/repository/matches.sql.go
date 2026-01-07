@@ -282,3 +282,33 @@ func (q *Queries) SetNextForMatch(ctx context.Context, arg SetNextForMatchParams
 	)
 	return i, err
 }
+
+const setWinnerAndFinishMatch = `-- name: SetWinnerAndFinishMatch :one
+UPDATE matches
+SET
+  winner = CASE WHEN matches.user1_points > user2_points THEN user1 ELSE user2 END
+WHERE id = $1
+RETURNING id, competition, winner, user1, user2, next, status, user1_points, user2_points, created_at
+`
+
+type SetWinnerAndFinishMatchParams struct {
+	ID uuid.UUID `json:"id"`
+}
+
+func (q *Queries) SetWinnerAndFinishMatch(ctx context.Context, arg SetWinnerAndFinishMatchParams) (Match, error) {
+	row := q.db.QueryRow(ctx, setWinnerAndFinishMatch, arg.ID)
+	var i Match
+	err := row.Scan(
+		&i.ID,
+		&i.Competition,
+		&i.Winner,
+		&i.User1,
+		&i.User2,
+		&i.Next,
+		&i.Status,
+		&i.User1Points,
+		&i.User2Points,
+		&i.CreatedAt,
+	)
+	return i, err
+}

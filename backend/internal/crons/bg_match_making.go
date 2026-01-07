@@ -95,7 +95,12 @@ func ProcessRunningMatches(ctx context.Context, repo *repository.Queries) error 
 					return fmt.Errorf("Failed to create a new round for match %v due to: %w", stat.Match, err)
 				}
 			} else {
-				// TODO: Set the winner and finish the match
+				_, err := repo.SetWinnerAndFinishMatch(ctx, repository.SetWinnerAndFinishMatchParams{
+					ID: stat.Match,
+				})
+				if err != nil {
+					return fmt.Errorf("Failed to set winner and finish match %v due to: %w", stat.Match, err)
+				}
 			}
 		}
 

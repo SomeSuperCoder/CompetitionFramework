@@ -15,7 +15,7 @@ import (
 const deleteCompetition = `-- name: DeleteCompetition :one
 DELETE FROM competitions
 WHERE id = $1
-RETURNING id, name, status, start_time, winner, created_at
+RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type DeleteCompetitionParams struct {
@@ -31,13 +31,14 @@ func (q *Queries) DeleteCompetition(ctx context.Context, arg DeleteCompetitionPa
 		&i.Status,
 		&i.StartTime,
 		&i.Winner,
+		&i.MinRounds,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const findAllCompetitions = `-- name: FindAllCompetitions :many
-SELECT id, name, status, start_time, winner, created_at FROM competitions ORDER BY created_at DESC
+SELECT id, name, status, start_time, winner, min_rounds, created_at FROM competitions ORDER BY created_at DESC
 `
 
 func (q *Queries) FindAllCompetitions(ctx context.Context) ([]Competition, error) {
@@ -55,6 +56,7 @@ func (q *Queries) FindAllCompetitions(ctx context.Context) ([]Competition, error
 			&i.Status,
 			&i.StartTime,
 			&i.Winner,
+			&i.MinRounds,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -68,7 +70,7 @@ func (q *Queries) FindAllCompetitions(ctx context.Context) ([]Competition, error
 }
 
 const findAllCompetitionsToStart = `-- name: FindAllCompetitionsToStart :many
-SELECT id, name, status, start_time, winner, created_at FROM competitions
+SELECT id, name, status, start_time, winner, min_rounds, created_at FROM competitions
 WHERE
   status = 'awaiting' AND
   start_time < CURRENT_TIMESTAMP 
@@ -90,6 +92,7 @@ func (q *Queries) FindAllCompetitionsToStart(ctx context.Context) ([]Competition
 			&i.Status,
 			&i.StartTime,
 			&i.Winner,
+			&i.MinRounds,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -103,7 +106,7 @@ func (q *Queries) FindAllCompetitionsToStart(ctx context.Context) ([]Competition
 }
 
 const findAllRunningCompetitions = `-- name: FindAllRunningCompetitions :many
-SELECT id, name, status, start_time, winner, created_at FROM competitions WHERE status = 'running' ORDER BY created_at ASC
+SELECT id, name, status, start_time, winner, min_rounds, created_at FROM competitions WHERE status = 'running' ORDER BY created_at ASC
 `
 
 func (q *Queries) FindAllRunningCompetitions(ctx context.Context) ([]Competition, error) {
@@ -121,6 +124,7 @@ func (q *Queries) FindAllRunningCompetitions(ctx context.Context) ([]Competition
 			&i.Status,
 			&i.StartTime,
 			&i.Winner,
+			&i.MinRounds,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -138,7 +142,7 @@ INSERT INTO competitions (
   name,
   start_time
 ) VALUES ( $1, $2 )
-RETURNING id, name, status, start_time, winner, created_at
+RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type InsertCompetitionParams struct {
@@ -155,6 +159,7 @@ func (q *Queries) InsertCompetition(ctx context.Context, arg InsertCompetitionPa
 		&i.Status,
 		&i.StartTime,
 		&i.Winner,
+		&i.MinRounds,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -164,7 +169,7 @@ const renameCompetition = `-- name: RenameCompetition :one
 UPDATE competitions
 SET name = $2
 WHERE id = $1
-RETURNING id, name, status, start_time, winner, created_at
+RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type RenameCompetitionParams struct {
@@ -181,6 +186,7 @@ func (q *Queries) RenameCompetition(ctx context.Context, arg RenameCompetitionPa
 		&i.Status,
 		&i.StartTime,
 		&i.Winner,
+		&i.MinRounds,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -191,7 +197,7 @@ UPDATE competitions
 SET
   status = $2
 WHERE id = $1
-RETURNING id, name, status, start_time, winner, created_at
+RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type SetCompetitionStatusParams struct {
@@ -208,6 +214,7 @@ func (q *Queries) SetCompetitionStatus(ctx context.Context, arg SetCompetitionSt
 		&i.Status,
 		&i.StartTime,
 		&i.Winner,
+		&i.MinRounds,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -218,7 +225,7 @@ UPDATE competitions
 SET
   winner = $2
 WHERE id = $1
-RETURNING id, name, status, start_time, winner, created_at
+RETURNING id, name, status, start_time, winner, min_rounds, created_at
 `
 
 type SetCompetitionWinnerParams struct {
@@ -235,6 +242,7 @@ func (q *Queries) SetCompetitionWinner(ctx context.Context, arg SetCompetitionWi
 		&i.Status,
 		&i.StartTime,
 		&i.Winner,
+		&i.MinRounds,
 		&i.CreatedAt,
 	)
 	return i, err

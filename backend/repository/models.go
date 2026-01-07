@@ -104,6 +104,7 @@ type Competition struct {
 	Status    UnitStatus       `json:"status"`
 	StartTime time.Time        `json:"start_time"`
 	Winner    *uuid.UUID       `json:"winner"`
+	MinRounds int32            `json:"min_rounds"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 

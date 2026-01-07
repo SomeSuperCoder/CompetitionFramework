@@ -73,31 +73,32 @@ func ProcessCurrentlyRunningCompetitons(ctx context.Context, repo *repository.Qu
 	}
 	log.Printf("The amount of currently running competitions is: %v", len(competitions))
 	for _, competition := range competitions {
-		err := ProcessMatchesOfCompeition(ctx, repo, competition)
+		// Process running matches
+		runningMatches, err := repo.FindAllRunningMatchesInCompetition(ctx, repository.FindAllRunningMatchesInCompetitionParams{
+			Competition: competition.ID,
+		})
+		err = ProcessRunningMatchesOfCompetition(ctx, repo, competition, runningMatches)
+		if err != nil {
+			return err
+		}
+
+		// Process completed matches
+		completedMatches, err := repo.FindAllCompletedMatchesInCompetitionWithNoDescendents(ctx, repository.FindAllCompletedMatchesInCompetitionWithNoDescendentsParams{
+			Competition: competition.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err)
+		}
+		err = ProcessCompletedMatchesOfCompetition(ctx, repo, competition, completedMatches)
 		if err != nil {
 			return err
 		}
 	}
-	// Find All Running Matches
 
-	// Find All Running Rounds
-
-	// Check if min_rounds is satisfied or if a tie break is required
-
-	// Spawn a new round if needed
-
-	// Or... Set the winner and finish the match
 	return err
 }
 
-func ProcessMatchesOfCompeition(ctx context.Context, repo *repository.Queries, competition repository.Competition) error {
-	matches, err := repo.FindAllCompletedMatchesInCompetitionWithNoDescendents(ctx, repository.FindAllCompletedMatchesInCompetitionWithNoDescendentsParams{
-		Competition: competition.ID,
-	})
-	if err != nil {
-		return fmt.Errorf("Failed to get matches for competition %v due to: %w", competition.Name, err)
-	}
-
+func ProcessCompletedMatchesOfCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {
 	// Check if all matches are finished
 	finishedCount := CountFinishedMatches(matches)
 	matchAmount := len(matches)
@@ -128,6 +129,36 @@ func CountFinishedMatches(matches []repository.Match) int {
 		}
 	}
 	return finishedCount
+}
+
+func ProcessRunningMatchesOfCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {
+	// Find All Running Matches
+	for _, match := range matches {
+		if match.Status == repository.UnitStatusRunning {
+			// Find All Compeleted Rounds
+			rounds, err := repo.FindAllCompletedRoundsInMatch(ctx, repository.FindAllCompletedRoundsInMatchParams{
+				Match: match.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("Failed to find completed rounds for match %v due to: %w", match.ID, err)
+			}
+
+			// Check if min_rounds is satisfied
+			if len(rounds) < int(competition.MinRounds) {
+				// If not, check if there are any currently running matches
+			} else {
+				// Check if a tie break is required
+
+			}
+
+		}
+	}
+
+	// Spawn a new round if needed
+
+	// Or... Set the winner and finish the match
+
+	return nil
 }
 
 func FinishCompetition(ctx context.Context, repo *repository.Queries, competition repository.Competition, matches []repository.Match) error {

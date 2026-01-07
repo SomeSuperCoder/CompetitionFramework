@@ -14,6 +14,7 @@ CREATE TABLE competitions (
   status unit_status NOT NULL DEFAULT 'awaiting',
   start_time TIMESTAMPTZ NOT NULL,
   winner UUID REFERENCES users(id),
+  min_rounds INTEGER NOT NULL CHECK(min_rounds > 0),
 
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

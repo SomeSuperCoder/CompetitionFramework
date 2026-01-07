@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const findAllCompletedRoundsInMatch = `-- name: FindAllCompletedRoundsInMatch :one
+const findAllCompletedRoundsInMatch = `-- name: FindAllCompletedRoundsInMatch :many
 SELECT id, task, match, start_time, end_time, winner, status, created_at FROM rounds WHERE status = 'completed' AND match = $1 ORDER BY created_at ASC
 `
 
@@ -20,20 +20,33 @@ type FindAllCompletedRoundsInMatchParams struct {
 	Match uuid.UUID `json:"match"`
 }
 
-func (q *Queries) FindAllCompletedRoundsInMatch(ctx context.Context, arg FindAllCompletedRoundsInMatchParams) (Round, error) {
-	row := q.db.QueryRow(ctx, findAllCompletedRoundsInMatch, arg.Match)
-	var i Round
-	err := row.Scan(
-		&i.ID,
-		&i.Task,
-		&i.Match,
-		&i.StartTime,
-		&i.EndTime,
-		&i.Winner,
-		&i.Status,
-		&i.CreatedAt,
-	)
-	return i, err
+func (q *Queries) FindAllCompletedRoundsInMatch(ctx context.Context, arg FindAllCompletedRoundsInMatchParams) ([]Round, error) {
+	rows, err := q.db.Query(ctx, findAllCompletedRoundsInMatch, arg.Match)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Round{}
+	for rows.Next() {
+		var i Round
+		if err := rows.Scan(
+			&i.ID,
+			&i.Task,
+			&i.Match,
+			&i.StartTime,
+			&i.EndTime,
+			&i.Winner,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const insertRound = `-- name: InsertRound :one

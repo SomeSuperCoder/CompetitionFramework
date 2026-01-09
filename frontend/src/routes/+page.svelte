@@ -1,2 +1,12 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+    import { invokeJSONRPC } from "$lib/api";
+	import Button from "$lib/components/ui/button/button.svelte";
+
+	let count = $state(0);
+
+	invokeJSONRPC("Competition.FindAllSortByName", {
+      "priority": 123,
+    })	
+</script>
+
+<Button onclick={() => count++}>{count}</Button>

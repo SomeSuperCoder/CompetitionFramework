@@ -20,9 +20,15 @@ export async function invokeJSONRPC<T>(
     "params": [${serializedObject}],
     "id": 1
 }`;
-  return (await axios.post<JSONRPCResponse<T>>(RPC_URL, requestBody)).data;
+  return (
+    await axios.post<JSONRPCResponse<T>>(RPC_URL, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  ).data;
 }
 
-export function getCompetitons() {
-  invokeJSONRPC('Competitions.FindAll', {});
+export async function getCompetitons(): Promise<JSONRPCResponse<unknown>> {
+  return invokeJSONRPC('Competition.FindAll', {});
 }

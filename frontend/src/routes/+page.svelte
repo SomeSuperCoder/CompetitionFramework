@@ -1,12 +1,13 @@
 <script lang="ts">
-    import { invokeJSONRPC } from "$lib/api";
+    import { getCompetitons } from "$lib/api";
 	import Button from "$lib/components/ui/button/button.svelte";
+    import { onMount } from "svelte";
 
 	let count = $state(0);
 
-	invokeJSONRPC("Competition.FindAllSortByName", {
-      "priority": 123,
-    })	
+	onMount(async () => {
+	  console.log(await getCompetitons())
+    }) 
 </script>
 
 <Button onclick={() => count++}>{count}</Button>

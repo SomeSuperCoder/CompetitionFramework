@@ -58,11 +58,30 @@ func main() {
 	go crons.BackgroundMatchMaking(ctx, repo)
 
 	// Start the http server
-	http.Handle("/rpc", s)
+	http.Handle("/rpc", corsMiddleware(s))
 
 	log.Printf("RPC started and is listening on :%v", port)
 	err = http.ListenAndServe(fmt.Sprintf(":%v", port), nil)
 	if err != nil {
 		panic(err)
 	}
+}
+
+// CORS middleware function
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set headers for all responses
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Adjust in production
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		// Handle preflight OPTIONS request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Pass to the next handler
+		next.ServeHTTP(w, r)
+	})
 }
